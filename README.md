@@ -1,5 +1,5 @@
 # ibb_toolkit
-An open-source MATLAB tool for inferential and predictive modeling of imaging-behavior and lesion-deficit relationships
+Iowa Brain-Behavior Toolkit: An open-source MATLAB tool for inferential and predictive modeling of imaging-behavior and lesion-deficit relationships
 
 The /tutorials folder contains MATLAB Live notebooks illustrating how to perform different kinds of modeling analyses using the toolkit. These tutorials illustrate how to import different kinds of datasets, how to specify and run different modeling analyses, and how to output and evaluate analysis results. 
 
