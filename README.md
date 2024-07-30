@@ -6,4 +6,3 @@ The /tutorials folder contains MATLAB Live notebooks illustrating how to perform
 The /manual folder contains a User Manual that provides an overview of toolkit functionality. 
 
 To invoke the GUI, navigate to the /ibb_toolkit directory in MATLAB, and type run_modeling_gui into the command window. 
-
