@@ -96,7 +96,7 @@ if isfield(model_results.cfg, 'perm') && model_results.cfg.perm.write_perm_image
                 coeff_thresh(abs(coeff_thresh) <= crit) = 0;
                 my_coeff = model_results.coeff .* (coeff_thresh ~= 0);
                 stat = my_coeff;
-                out_name = ['coeff_z_rescaled_fwe' fwe_thresh '_v' crit_vals{i}];
+                out_name = ['coeff_fwe' fwe_thresh '_v' crit_vals{i}];
                 write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);               
             end
         end
