@@ -10,7 +10,7 @@ cfg = model_results.cfg;
 if ~isfield(cfg, 'strat_name') && cfg.strat_var ~= model_results.obs_y
     cfg.strat_name = '[INSERT VARIABLE NAME]';
 elseif cfg.strat_var == model_results.obs_y
-    cfg.strat_name = ' the outcome';
+    cfg.strat_name = 'the outcome';
 end
 
 if ~isfield(cfg.hp_opt, 'bayes_opt')
