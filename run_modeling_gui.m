@@ -116,7 +116,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
 
         % Button pushed function: SelectDataDirectoryButton
         function SelectDataDirectoryButtonPushed(app, event)
-            cfg.img_dir = uigetdir('/Shared/boeslab/Data/Lesion/Iowa/Registry/lesionMasks/Chronic/MNI152', 'Select directory containing imaging data');
+            cfg.img_dir = uigetdir('', 'Select directory containing imaging data');
             if cfg.img_dir == 0
                 error('No directory selected; please try again');
             else
@@ -127,17 +127,14 @@ classdef run_modeling_gui < matlab.apps.AppBase
         % Button pushed function: SelectBrainMaskButton
         function SelectBrainMaskButtonPushed(app, event)
             if app.NIFTIButton.Value == 1
-                [mask_file, mask_path] = uigetfile({'*.nii.gz'; '*.nii'; '*.'}, 'Select brain mask file',...
-                    '/Shared/boeslab/Atlas/volumetric/MNI152/2mm/masks/wholecb_mask.nii.gz');
+                [mask_file, mask_path] = uigetfile({'*.nii.gz'; '*.nii'; '*.'}, 'Select brain mask file');
                 if mask_file == 0
                     error('No file selected; please try again');
                 else
                     app.BrainMaskText.Value = fullfile(mask_path, mask_file);
                 end
             elseif app.MatrixButton.Value == 1
-                [parcel_file, parcel_path] = uigetfile({'*.mat'}, 'Select parcellation_table',...
-                    '/Shared/boeslab/Software/Lesion_Quantification_Toolkit/Support_Tools/Parcellations/Schaefer_Yeo/Plus_Subcort2/Schaefer2018_200Parcels_7Networks_order_plus_subcort.mat');
-       
+                [parcel_file, parcel_path] = uigetfile({'*.mat'}, 'Select parcellation_table');
                 if parcel_file == 0
                     error('No file selected; please try again');
                 else
