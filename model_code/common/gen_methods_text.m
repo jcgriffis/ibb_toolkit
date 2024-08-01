@@ -7,9 +7,12 @@ function method_text = gen_methods_text(model_results)
 % Get cfg as separate structure for convenience
 cfg = model_results.cfg;
 
-if ~isfield(cfg, 'strat_name')
+if ~isfield(cfg, 'strat_name') && cfg.strat_var ~= model_results.obs_y
     cfg.strat_name = '[INSERT VARIABLE NAME]';
+elseif cfg.strat_var == model_results.obs_y
+    cfg.strat_name = ' the outcome';
 end
+
 if ~isfield(cfg.hp_opt, 'bayes_opt')
     cfg.hp_opt.bayes_opt = 0;
 end
@@ -131,16 +134,16 @@ if cfg.cross_validation == 1
         if cfg.cat_Y == 1
             if cfg.cv.repeats > 1
                 cv_text = [cv_text, ' To test the significance of the inferential model in terms of the cross-validation performance, Fishers exact test was performed on the confusion matrix computed using the '...
-                    'mode (across cross-validation repetitions) out-of-sample predicted classes and true outcomes for all observations (analogous to Pustina et al., 2018).'];
+                    'mode (across cross-validation repetitions) out-of-sample predicted classes and true outcomes for all observations (analogous to Pustina et al., 2017).'];
             else
                 cv_text = [cv_text, ' To test the significance of the inferential model in terms of cross-validation performance, Fishers exact test was performed on the confusion matrix computed using the '...
-                    'out-of-fold predicted classes and true outcomes for all observations (analogous to Pustina et al., 2018).'];            
+                    'out-of-fold predicted classes and true outcomes for all observations (analogous to Pustina et al., 2017).'];            
             end
         else
             if cfg.cv.repeats > 1
-                cv_text = [cv_text, ' To test the significance of the inferential model in terms of the cross-validation performance, the average (across cross-validation repetitions) Pearson correlation was computed between the out-of-fold predictions and observed outcomes for all observations (Pustina et al., 2018).'];
+                cv_text = [cv_text, ' To test the significance of the inferential model in terms of the cross-validation performance, the average (across cross-validation repetitions) Pearson correlation was computed between the out-of-fold predictions and observed outcomes for all observations (Pustina et al., 2017).'];
             else
-                cv_text = [cv_text, ' To test the significance of the inferential model in terms of the cross-validation performance, the Pearson correlation was computed between the out-of-fold predictions and the observed outcomes for all observations (Pustina et al., 2018).'];
+                cv_text = [cv_text, ' To test the significance of the inferential model in terms of the cross-validation performance, the Pearson correlation was computed between the out-of-fold predictions and the observed outcomes for all observations (Pustina et al., 2017).'];
             end
         end
     end       
@@ -233,7 +236,7 @@ if cfg.fit_explanatory_model == 1
     if cfg.permutation == 1
         expl_text = [expl_text ' To determine the significance of the inferential model compared to an empirical null distribution of model fits, permutation testing was performed using ' num2str(cfg.perm.n_perm) ' permutation iterations.'];
         if cfg.perm.coeff_cfwe == 1
-            expl_text = [expl_text, ' The continuous FWE method (Mirman et al., 2018) was used to determine a single family-wise error threshold across all predictors at predictor thresholds ' ...
+            expl_text = [expl_text, ' The continuous FWE method (Mirman et al., 2017) was used to determine a single family-wise error threshold across all predictors at predictor thresholds ' ...
                 'of [1,10,50,100,500,1000].'];
         end
         if cfg.perm.coeff_p == 1
