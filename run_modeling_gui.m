@@ -116,7 +116,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
 
         % Button pushed function: SelectDataDirectoryButton
         function SelectDataDirectoryButtonPushed(app, event)
-            cfg.img_dir = uigetdir('', 'Select directory containing imaging data');
+            cfg.img_dir = uigetdir('/Shared/boeslab/Data/Lesion/Iowa/Registry/lesionMasks/Chronic/MNI152', 'Select directory containing imaging data');
             if cfg.img_dir == 0
                 error('No directory selected; please try again');
             else
@@ -128,7 +128,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
         function SelectBrainMaskButtonPushed(app, event)
             if app.NIFTIButton.Value == 1
                 [mask_file, mask_path] = uigetfile({'*.nii.gz'; '*.nii'; '*.'}, 'Select brain mask file',...
-                    '');
+                    '/Shared/boeslab/Atlas/volumetric/MNI152/2mm/masks/wholecb_mask.nii.gz');
                 if mask_file == 0
                     error('No file selected; please try again');
                 else
@@ -136,7 +136,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 end
             elseif app.MatrixButton.Value == 1
                 [parcel_file, parcel_path] = uigetfile({'*.mat'}, 'Select parcellation_table',...
-                    '');
+                    '/Shared/boeslab/Software/Lesion_Quantification_Toolkit/Support_Tools/Parcellations/Schaefer_Yeo/Plus_Subcort2/Schaefer2018_200Parcels_7Networks_order_plus_subcort.mat');
        
                 if parcel_file == 0
                     error('No file selected; please try again');
@@ -285,20 +285,32 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 cfg = get_and_format_array_data(beh_csv, id_col, beh_col, app.RegistryFlag.Value, data_dir, cfg);              
             end
 
-            % Do lesion volume regression if indicated
+            % Set up confounds for nuisance regression if indicated
             disp('Nuisance Regressors: ');
-            for i =1:length(app.SelectNuisanceRegressorsListBox.Value)
+            cfg.confounds = [];
+            for i = 1:length(app.SelectNuisanceRegressorsListBox.Value)
                 disp(app.SelectNuisanceRegressorsListBox.Value{i});
                 cfg.confounds(:,i) = beh_csv.(app.SelectNuisanceRegressorsListBox.Value{i});
                 cfg.confound_names{i} = app.SelectNuisanceRegressorsListBox.Value{i};
             end
             cfg.confounds = cfg.confounds(cfg.include_inds,:);
-            disp(size(cfg.confounds));
-            disp(size(cfg.lvol));
+            if ~isempty(find(isnan(cfg.confounds)))
+                disp('Checking nuisance regressors...')
+                disp('Some subjects have missing data for nuisance regressors; removing subjects with missing data...');                
+                [cfg.confounds, cfg.missing_inds] = rmmissing(cfg.confounds, 1);
+                cfg.X = cfg.X(cfg.missing_inds == 0, :);
+                cfg.Y = cfg.Y(cfg.missing_inds == 0, :);
+                if isfield(cfg, 'lvol')
+                    cfg.lvol = cfg.lvol(cfg.missing_inds == 0);
+                end
+                disp([num2str(numel(find(cfg.missing_inds==1))) ' subjects were removed due to missing data for nuisance regressors.']);
+                disp('Removed subjects will have values of 1 in model_results.cfg.missing_inds');
+            end
+                
             if app.LesionButton.Value == 1 && app.RegressLesionVolumefromYCheckBox.Value == 1
                 cfg.confounds = [cfg.confounds, cfg.lvol];
             else
-                cfg.confounds = [];
+                cfg.confounds = cfg.confounds;
             end
 
             % Do stratification on outcome if indicated
@@ -782,8 +794,8 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.SelectNuisanceRegressorsListBox.Items = setdiff(app.SelectOutcomeVariableYListBox.Items, app.SelectOutcomeVariableYListBox.Value);
             else
                 app.SelectNuisanceRegressorsListBox.Enable = 0;
-                app.SelectNuisanceRegressorsListBox.Items = [];
-                app.SelectNuisanceRegressorsListBox.Value = [];
+                app.SelectNuisanceRegressorsListBox.Items = string();
+                app.SelectNuisanceRegressorsListBox.Value = {};
             end
         end
     end
