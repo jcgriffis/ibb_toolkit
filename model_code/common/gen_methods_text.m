@@ -7,10 +7,12 @@ function method_text = gen_methods_text(model_results)
 % Get cfg as separate structure for convenience
 cfg = model_results.cfg;
 
-if ~isfield(cfg, 'strat_name') && cfg.strat_var ~= model_results.obs_y
-    cfg.strat_name = '[INSERT VARIABLE NAME]';
-elseif cfg.strat_var == model_results.obs_y
-    cfg.strat_name = 'the outcome';
+if ~isempty(cfg.strat_var)
+    if ~isfield(cfg, 'strat_name') && cfg.strat_var ~= model_results.obs_y
+        cfg.strat_name = '[INSERT VARIABLE NAME]';
+    elseif cfg.strat_var == model_results.obs_y
+        cfg.strat_name = 'the outcome';
+    end
 end
 
 if ~isfield(cfg.hp_opt, 'bayes_opt')
