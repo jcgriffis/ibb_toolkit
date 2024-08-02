@@ -17,7 +17,7 @@ end
 
 if standardize == 1 || standardize == 3
     [X] = normalize(X);
-    X(isnan(X)); % Since normalize will cause columns to become NaN if they are all 0
+    X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
 end
 
 % Get costs
