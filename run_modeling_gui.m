@@ -290,18 +290,20 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 cfg.confounds(:,i) = beh_csv.(app.SelectNuisanceRegressorsListBox.Value{i});
                 cfg.confound_names{i} = app.SelectNuisanceRegressorsListBox.Value{i};
             end
-            cfg.confounds = cfg.confounds(cfg.include_inds,:);
-            if ~isempty(find(isnan(cfg.confounds)))
-                disp('Checking nuisance regressors...')
-                disp('Some subjects have missing data for nuisance regressors; removing subjects with missing data...');                
-                [cfg.confounds, cfg.missing_inds] = rmmissing(cfg.confounds, 1);
-                cfg.X = cfg.X(cfg.missing_inds == 0, :);
-                cfg.Y = cfg.Y(cfg.missing_inds == 0, :);
-                if isfield(cfg, 'lvol')
-                    cfg.lvol = cfg.lvol(cfg.missing_inds == 0);
+            if ~isempty(cfg.confounds)
+                cfg.confounds = cfg.confounds(cfg.include_inds,:);
+                if ~isempty(find(isnan(cfg.confounds)))
+                    disp('Checking nuisance regressors...')
+                    disp('Some subjects have missing data for nuisance regressors; removing subjects with missing data...');                
+                    [cfg.confounds, cfg.missing_inds] = rmmissing(cfg.confounds, 1);
+                    cfg.X = cfg.X(cfg.missing_inds == 0, :);
+                    cfg.Y = cfg.Y(cfg.missing_inds == 0, :);
+                    if isfield(cfg, 'lvol')
+                        cfg.lvol = cfg.lvol(cfg.missing_inds == 0);
+                    end
+                    disp([num2str(numel(find(cfg.missing_inds==1))) ' subjects were removed due to missing data for nuisance regressors.']);
+                    disp('Removed subjects will have values of 1 in model_results.cfg.missing_inds');
                 end
-                disp([num2str(numel(find(cfg.missing_inds==1))) ' subjects were removed due to missing data for nuisance regressors.']);
-                disp('Removed subjects will have values of 1 in model_results.cfg.missing_inds');
             end
                 
             if app.LesionButton.Value == 1 && app.RegressLesionVolumefromYCheckBox.Value == 1
