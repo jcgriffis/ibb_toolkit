@@ -30,6 +30,7 @@ beh_data = beh_table.(beh_col);
 has_data = ~isnan(beh_data);
 beh_data = beh_data(has_data);
 sub_ids = sub_ids(has_data);
+inc_inds = find(has_data);
 has_data = has_data(has_data);
 
 % Verify that lesion images exist for all patients with behavioral data
@@ -72,7 +73,7 @@ end
 % Define outputs
 cfg.Y = beh_data;
 cfg.include_subs = sub_ids;
-cfg.include_inds = find(has_data);
+cfg.include_inds = inc_inds(has_data);
 
 end
     
