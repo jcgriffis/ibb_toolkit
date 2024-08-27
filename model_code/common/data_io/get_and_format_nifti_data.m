@@ -30,6 +30,7 @@ beh_data = beh_table.(beh_col);
 has_data = ~isnan(beh_data);
 beh_data = beh_data(has_data);
 sub_ids = sub_ids(has_data);
+has_data = has_data(has_data);
 
 % Verify that NIFTI images exist for all patients with behavioral data
 nii_check = zeros(length(sub_ids), 1);
@@ -47,6 +48,7 @@ if ~isempty(missing_nii)
     warning([num2str(numel(missing_nii)) ' patients do not have NIFTI files in the NIFTI directory. These patients will be excluded.']);
     sub_ids = sub_ids(nii_check==1);
     beh_data = beh_data(nii_check==1);
+    has_data(nii_check==0) = 0;
     disp(['After excluding patients with missing NIFTI files, N=' num2str(length(sub_ids)) ' patients will be included'])
 else
     disp(['All subjects with behavioral data have NIFTI files, N=' num2str(length(sub_ids)) ' patients will be included'])
