@@ -30,6 +30,7 @@ beh_data = beh_table.(beh_col);
 has_data = ~isnan(beh_data);
 beh_data = beh_data(has_data);
 sub_ids = sub_ids(has_data);
+has_data = has_data(has_data);
 
 % Verify that lesion images exist for all patients with behavioral data
 lesion_check = zeros(length(sub_ids), 1);
