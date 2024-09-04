@@ -5,7 +5,7 @@ function [has_data, X_trim, Y, cfg] = check_for_missing_data(X_trim, Y, cfg)
 % Joseph Griffis 2023
 
 % Check to see if any subjects have no viable lesion data after trimming X
-has_data = nansum(X_trim, 2) > 0;
+has_data = nansum(abs(X_trim), 2) > 0;
 
 % Remove any subjects without viable lesion data from X and Y
 if ~isempty(has_data(has_data==0))
