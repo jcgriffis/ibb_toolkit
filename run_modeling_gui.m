@@ -3,6 +3,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
+        CatYCheckBox                    matlab.ui.control.CheckBox
         NuisanceRegressorCheckBox       matlab.ui.control.CheckBox
         RegressLesionVolumefromYCheckBox  matlab.ui.control.CheckBox
         SelectNuisanceRegressorsListBox  matlab.ui.control.ListBox
@@ -96,10 +97,23 @@ classdef run_modeling_gui < matlab.apps.AppBase
     % Callbacks that handle component events
     methods (Access = private)
 
+        % Code that executes after component creation
+        function startupFcn(app)
+            model_dir = fileparts(which('run_modeling_gui.mlapp'));
+            addpath(model_dir);
+        end
+
         % Callback function: CSVTtext, SelectCSVfileButton
         function SelectCSVfileButtonPushed(app, event)
-            [csv_file, csv_path] = uigetfile({'*.csv'; '*xls'; '*xlsx'; '*.'},...
-                'Select CSV file containing behavioral data');
+            model_dir = fileparts(which('run_modeling_gui.mlapp'));            
+            if isfile(fullfile(model_dir, 'default_paths.mat'))
+                load(fullfile(model_dir, 'default_paths.mat'), 'csv_dir');
+                [csv_file, csv_path] = uigetfile({'*.csv'; '*xls'; '*xlsx'; '*.'},...
+                    'Select CSV file containing behavioral data', csv_dir);
+            else
+                [csv_file, csv_path] = uigetfile({'*.csv'; '*xls'; '*xlsx'; '*.'},...
+                    'Select CSV file containing behavioral data');  
+            end
             if csv_file == 0
                 error('No file selected; please try again');
             else
@@ -116,7 +130,13 @@ classdef run_modeling_gui < matlab.apps.AppBase
 
         % Button pushed function: SelectDataDirectoryButton
         function SelectDataDirectoryButtonPushed(app, event)
-            cfg.img_dir = uigetdir('', 'Select directory containing imaging data');
+            model_dir = fileparts(which('run_modeling_gui.mlapp'));            
+            if isfile(fullfile(model_dir, 'default_paths.mat'))
+                load(fullfile(model_dir, 'default_paths.mat'), 'data_dir');
+                cfg.img_dir = uigetdir(data_dir, 'Select directory containing imaging data');
+            else
+                cfg.img_dir = uigetdir(pwd, 'Select directory containing imaging data');
+            end
             if cfg.img_dir == 0
                 error('No directory selected; please try again');
             else
@@ -126,22 +146,28 @@ classdef run_modeling_gui < matlab.apps.AppBase
 
         % Button pushed function: SelectBrainMaskButton
         function SelectBrainMaskButtonPushed(app, event)
+            model_dir = fileparts(which('run_modeling_gui.mlapp'));            
             if app.NIFTIButton.Value == 1
-                [mask_file, mask_path] = uigetfile({'*.nii.gz'; '*.nii'; '*.'}, 'Select brain mask file');
+                if isfile(fullfile(model_dir, 'default_paths.mat'))
+                    load(fullfile(model_dir, 'default_paths.mat'), 'mask_file');
+                    [mask_file, mask_path] = uigetfile({'*.nii.gz'; '*.nii'; '*.'}, 'Select brain mask file',...
+                        mask_file);
+                else
+                    [mask_file, mask_path] = uigetfile({'*.nii.gz'; '*.nii'; '*.'}, 'Select brain mask file', pwd);
+                end
                 if mask_file == 0
                     error('No file selected; please try again');
                 else
                     app.BrainMaskText.Value = fullfile(mask_path, mask_file);
                 end
             elseif app.MatrixButton.Value == 1
-                [parcel_file, parcel_path] = uigetfile({'*.mat'}, 'Select parcellation_table');
+                [parcel_file, parcel_path] = uigetfile({'*.mat'}, 'Select parcellation_table',...
+                    pwd);       
                 if parcel_file == 0
                     error('No file selected; please try again');
                 else
                     app.BrainMaskText.Value = fullfile(parcel_path, parcel_file);
-                end
-            
-            
+                end            
             end
         end
 
@@ -153,6 +179,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
             cfg.model_dir = fullfile(model_dir, 'model_code');
             
             % Add core functions to path
+            addpath(fullfile(cfg.model_dir));
             addpath(genpath(fullfile(cfg.model_dir, 'common')));
             
             % Set analysis modality
@@ -307,7 +334,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
             end
                 
             if app.LesionButton.Value == 1 && app.RegressLesionVolumefromYCheckBox.Value == 1
-                cfg.confounds = [cfg.confounds, cfg.lvol];
+                cfg.confounds = [cfg.confounds, zscore(cfg.lvol)];
             else
                 cfg.confounds = cfg.confounds;
             end
@@ -324,6 +351,17 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 cfg.cost(1,2) = app.MisClasCostG1.Value;
                 cfg.cost(2,1) = app.MisClasCostG2.Value;
             end
+            
+            % Set grouping flag for T-test
+            if strcmp(cfg.model_spec, 'ttest')
+                if app.CatYCheckBox.Value == 1
+                    cfg.group_var = 'Y';
+                    cfg.cat_Y = 1;
+                else
+                    cfg.group_var = 'X';
+                    cfg.cat_Y = 0;
+                end
+            end
 
             % Train and evaluate model
             model_results = fit_and_evaluate_model(cfg);
@@ -339,14 +377,14 @@ classdef run_modeling_gui < matlab.apps.AppBase
             cd(cfg.out_dir);
 
             % Print results for regression models 
-            if ~contains(cfg.model_spec, ["municorr", "bmunz", "ttest", "munilr"])
+            if ~contains(cfg.model_spec, ["municorr", "bmunz", "ttest", "munilr", "muniolsr", "prop_sub"])
                 if cfg.fit_explanatory_model == 1 && cfg.cat_Y == 0
                     
                    % Print model R-squared
                    diary('explanatory_model_results.txt')
                    disp('--------Model Result Summary-------');
                    disp('-----Inferential Model Results-----');
-                   disp('-----------------------------------')
+                   disp('-----------------------------------');
                    disp(['Model R-squared: ' num2str(model_results.r2)]);
                     
                    % Print additional statistics depending on analysis settings
@@ -611,7 +649,13 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.MisClasCostG1.Enable = 1;
                 app.MisClasCostG2.Enable = 1;
             end
-            if contains(value, ["municorr", "ttest", "bmunz", "munilr"])
+            if contains(value, ["logistic", "pls_da", "svc", "censemble", "munilr"])
+                app.RegressLesionVolumefromYCheckBox.Text = 'Regress Lesion Volume from X';
+            else
+                app.RegressLesionVolumefromYCheckBox.Text = 'Regress Lesion Volume from Y';
+            end
+            if contains(value, ["municorr", "ttest", "bmunz", "munilr", "muniolsr", ...
+                    'prop_sub'])
                 % Bootstrap options
                 app.BootCheckBox.Enable = 0;
                 app.BootCIsCheckBox.Enable = 0;
@@ -634,10 +678,56 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.HpOptRepeats.Enable = 0;
                 % Permutation testing options
                 app.PermCheckBox.Value = 1;
+                app.PermCheckBox.Enable = 1;                    
                 app.PermApplycFWECheckBox.Value = 1;
+                app.PermApplycFWECheckBox.Enable = 1;                    
                 app.PermIter.Value = 10000;
-                app.PermVoxPValsCheckBox.Value = 0;
+                app.PermIter.Enable = 1;           
+                app.FweThresh.Value = 0.05;
+                app.FweThresh.Enable = 1;
                 app.WritePermutationImagesCheckBox.Value = 1;
+                app.WritePermutationImagesCheckBox.Enable = 1;                
+                if ~strcmp(value, 'prop_sub')
+                    app.PermVoxPValsCheckBox.Value = 0;
+                    app.PermVoxPValsCheckBox.Enable = 1;
+                    app.StandardizeXCheckBox.Enable = 1;
+                    app.StandardizeXCheckBox.Value = 0;
+                    app.StandardizeYCheckBox.Enable = 1;
+                    app.StandardizeYCheckBox.Value = 0;
+                    app.FDRThresh.Value = 0.05;
+                    app.FDRThresh.Enable = 1;
+                    app.UncPThresh.Value = .001;
+                    app.UncPThresh.Enable = 1;      
+                    app.ApplyDTLVCCheckBox.Enable = 1;
+                    app.ApplyDTLVCCheckBox.Value = 0;
+                    app.MinFreq.Value = 10;
+                    app.RegressLesionVolumefromYCheckBox.Enable = 1;
+                    app.RegressLesionVolumefromYCheckBox.Value = 1;
+                    app.SelectNuisanceRegressorsListBox.Enable = 1;
+                    app.NuisanceRegressorCheckBox.Enable = 1;                    
+                else
+                    app.PermVoxPValsCheckBox.Value = 0;
+                    app.PermVoxPValsCheckBox.Enable = 0;
+                    app.StandardizeXCheckBox.Enable = 0;
+                    app.StandardizeXCheckBox.Value = 0;
+                    app.StandardizeYCheckBox.Enable = 0;
+                    app.StandardizeYCheckBox.Value = 0;
+                    app.FDRThresh.Value = 0;
+                    app.FDRThresh.Enable = 0;
+                    app.FweThresh.Value = 0;
+                    app.FweThresh.Enable = 0;
+                    app.UncPThresh.Value = 0;
+                    app.UncPThresh.Enable = 0;
+                    app.ApplyDTLVCCheckBox.Enable = 0;
+                    app.ApplyDTLVCCheckBox.Value = 0;     
+                    app.MinFreq.Value = 1;
+                    app.RegressLesionVolumefromYCheckBox.Enable = 0;
+                    app.RegressLesionVolumefromYCheckBox.Value = 0;
+                    app.SelectNuisanceRegressorsListBox.Enable = 0;
+                    app.SelectNuisanceRegressorsListBox.Value = {};
+                    app.NuisanceRegressorCheckBox.Value = 0;
+                    app.NuisanceRegressorCheckBox.Enable = 0;
+                end
                 % Cross-validation options
                 app.CVType.Enable = 0;
                 app.CVPermPanel.Enable = 0;
@@ -654,6 +744,16 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.OuterRepeats.Enable = 0;
                 % General options
                 app.ApplyDTLVCCheckBox.Value = 0;
+                % T-test options
+                if strcmp(value, 'ttest')
+                    app.CatYCheckBox.Visible = 1;
+                    app.CatYCheckBox.Enable = 1;
+                    app.CatYCheckBox.Value = 1;
+                else
+                    app.CatYCheckBox.Visible = 0;
+                    app.CatYCheckBox.Enable = 0;
+                    app.CatYCheckBox.Value = 0;
+                end
             else
                 % Bootstrap options
                 app.BootCheckBox.Enable = 1;
@@ -677,10 +777,15 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.HpOptRepeats.Enable = 1;
                 % Permutation testing options
                 app.PermCheckBox.Value = 0;
+                app.PermCheckBox.Enable = 1;                                    
                 app.PermApplycFWECheckBox.Value = 0;
+                app.PermApplycFWECheckBox.Enable = 1;                                    
                 app.PermIter.Value = 0;
+                app.PermIter.Enable = 1;
                 app.PermVoxPValsCheckBox.Value = 0;
+                app.PermVoxPValsCheckBox.Enable = 1;
                 app.WritePermutationImagesCheckBox.Value = 0;
+                app.WritePermutationImagesCheckBox.Enable = 1;             
                 % Cross-validation options
                 app.CVType.Enable = 1;
                 app.CVPermPanel.Enable = 1;
@@ -695,6 +800,28 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.OuterRepeats.Enable = 1;
                 app.OuterRepeats.Value = 5;
                 app.EnableModelStackingCheckBox.Value = 1;
+                % T-test options
+                app.CatYCheckBox.Visible = 0;
+                app.CatYCheckBox.Enable = 0;
+                app.CatYCheckBox.Value = 0;
+                % Other
+                app.StandardizeXCheckBox.Enable = 1;
+                app.StandardizeXCheckBox.Value = 0;
+                app.StandardizeYCheckBox.Enable = 1;
+                app.StandardizeYCheckBox.Value = 0;
+                app.FDRThresh.Value = 0.05;
+                app.FDRThresh.Enable = 1;
+                app.FweThresh.Value = 0.05;
+                app.FweThresh.Enable = 1;
+                app.UncPThresh.Value = .001;
+                app.UncPThresh.Enable = 1;      
+                app.ApplyDTLVCCheckBox.Enable = 1;
+                app.ApplyDTLVCCheckBox.Value = 0; 
+                app.MinFreq.Value = 10;
+                app.RegressLesionVolumefromYCheckBox.Enable = 1;
+                app.SelectNuisanceRegressorsListBox.Enable = 1;
+                app.NuisanceRegressorCheckBox.Enable = 1;                    
+                
             end
         end
 
@@ -795,6 +922,16 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.SelectNuisanceRegressorsListBox.Enable = 0;
                 app.SelectNuisanceRegressorsListBox.Items = string();
                 app.SelectNuisanceRegressorsListBox.Value = {};
+            end
+        end
+
+        % Value changed function: CatYCheckBox
+        function CatYCheckBoxValueChanged(app, event)
+            value = app.CatYCheckBox.Value;
+            if value == 1
+                app.RegressLesionVolumefromYCheckBox.Text = 'Regress lesion volume from X';
+            else
+                app.RegressLesionVolumefromYCheckBox.Text = 'Regress lesion volume from Y';
             end
         end
     end
@@ -1166,7 +1303,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
 
             % Create SelectModelDropDown
             app.SelectModelDropDown = uidropdown(app.UIFigure);
-            app.SelectModelDropDown.Items = {'plsr', 'pls_da', 'ridge', 'logistic_ridge', 'linsvr', 'linsvc', 'kernsvr', 'kernsvc', 'rensemble', 'censemble', 'municorr', 'ttest', 'bmunz', 'munilr'};
+            app.SelectModelDropDown.Items = {'plsr', 'pls_da', 'ridge', 'logistic_ridge', 'linsvr', 'linsvc', 'kernsvr', 'kernsvc', 'rensemble', 'censemble', 'municorr', 'ttest', 'bmunz', 'munilr', 'muniolsr', 'prop_sub'};
             app.SelectModelDropDown.ValueChangedFcn = createCallbackFcn(app, @SelectModelDropDownValueChanged, true);
             app.SelectModelDropDown.FontSize = 14;
             app.SelectModelDropDown.BackgroundColor = [0.651 0.651 0.651];
@@ -1359,6 +1496,14 @@ classdef run_modeling_gui < matlab.apps.AppBase
             app.NuisanceRegressorCheckBox.Text = '';
             app.NuisanceRegressorCheckBox.Position = [196 532 25 22];
 
+            % Create CatYCheckBox
+            app.CatYCheckBox = uicheckbox(app.UIFigure);
+            app.CatYCheckBox.ValueChangedFcn = createCallbackFcn(app, @CatYCheckBoxValueChanged, true);
+            app.CatYCheckBox.Enable = 'off';
+            app.CatYCheckBox.Visible = 'off';
+            app.CatYCheckBox.Text = 'Y is Grouping Variable';
+            app.CatYCheckBox.Position = [217 421 141 22];
+
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
         end
@@ -1375,6 +1520,9 @@ classdef run_modeling_gui < matlab.apps.AppBase
 
             % Register the app with App Designer
             registerApp(app, app.UIFigure)
+
+            % Execute the startup function
+            runStartupFcn(app, @startupFcn)
 
             if nargout == 0
                 clear app
