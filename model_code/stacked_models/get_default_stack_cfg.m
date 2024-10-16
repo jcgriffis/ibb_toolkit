@@ -5,7 +5,7 @@ function cfg = get_default_stack_cfg(cfg)
 
 % Add common directory to path
 restore_model_path(cfg.model_dir);
-addpath(fullfile(cfg.model_dir, 'common'));
+addpath(genpath(fullfile(cfg.model_dir, 'common')));
 
 % Set defaults if not already set
 if ~isfield(cfg, 'model_spec')
