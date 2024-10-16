@@ -49,7 +49,7 @@ if ~isempty(missing_matrix)
     warning([num2str(numel(missing_matrix)) ' patients do not have matrix files in the lesion directory. These patients will be excluded.']);
     sub_ids = sub_ids(matrix_check==1);
     beh_data = beh_data(matrix_check==1);
-    has_data(matrix_check==0) = 0;
+    has_data(matrix_check == 0) = 0;
     disp(['After excluding patients with missing matrix files, N=' num2str(length(sub_ids)) ' patients will be included'])
 else
     disp(['All subjects with behavioral data have matrix files, N=' num2str(length(sub_ids)) ' patients will be included'])

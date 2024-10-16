@@ -1,4 +1,4 @@
-function write_mass_unicorr_weight_maps(nifti_out, nifti_hdr, model_results)
+function write_mass_uni_weight_maps(nifti_out, nifti_hdr, model_results)
 
 if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
 

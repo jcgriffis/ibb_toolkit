@@ -18,6 +18,4 @@ if contains(my_path, fullfile(model_dir, 'mass_univariate'))
     rmpath(genpath(fullfile(model_dir, 'mass_univariate')));
 end
 
-
-
 end

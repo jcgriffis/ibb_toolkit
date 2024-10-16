@@ -1,4 +1,5 @@
 function [X_trimmed, X_trim_ind] = trim_X_data(X, bin_thresh, f_thresh)
+
 % Removes predictor variables with < f_thresh observations equal to or greater than bin_thresh
 % Joseph Griffis 2023
 

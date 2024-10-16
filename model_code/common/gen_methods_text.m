@@ -51,13 +51,16 @@ switch cfg.model_spec
         mdl_text = 'Data were analyzed using mass-univariate independent samples t-tests.';
     case 'munilr'
         mdl_text = 'Data were analyzed using mass-univariate logistic regression models.';
+    case 'muniolsr'
+        mdl_text = 'Data were analyzed using mass-univariate linear regression models.';        
     case 'bmunz'
         mdl_text = 'Data were analyzed using mass-univariate Brunner-Munzel tests.';
     case 'censemble'
         mdl_text = 'Data were modeled using a classification ensemble.';
     case 'rensemble'
         mdl_text = 'Data were modeled using a regression ensemble';
-
+    case 'prop_sub'
+        mdl_text = 'Data were analyzed using mass-univariate proportional subtraction analyses.';
 end
 
 % Analysis configuation
@@ -71,9 +74,15 @@ end
 if cfg.dtlvc == 1
     mdl_text = [mdl_text, ' The direct total lesion volume control method (Zhang et al., 2014) was used to mitigate the effects of lesion volume.'];
 end
-if ~isempty(cfg.confounds)
+
+% Confounds
+if ~isempty(cfg.confounds) && ~contains(cfg.model_spec, {'munilr', 'muniolsr'})
     if ~isfield(cfg, 'confound_names')
-        mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regressors from the outcome variable in the training set(s) prior to training the model, and the resulting model(s) were applied to the outcome data from the test set(s) before obtaining predicted outcomes.'];
+        if cfg.cross_validation == 1
+            mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regressors from the outcome variable. For cross-validation analyses, this was done in the training set(s) prior to training the model(s), and the resulting model(s) were applied to the outcome data from the test set(s) before obtaining predicted outcomes.'];
+        else
+            mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regressors from the outcome variable prior to running the analyses.'];
+        end
     else
         for i = 1:length(cfg.confound_names)
             if i == 1
@@ -82,9 +91,28 @@ if ~isempty(cfg.confounds)
                 conf_text = [conf_text ', ' cfg.confound_names{i}];
             end
         end
-        mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regresors (' conf_text ') from the outcome variable in the training set(s) prior to training the model, and the resulting model(s) were applied to the outcome data from the test set(s) before obtaining predicted outcomes.'];
+        if cfg.cross_validation == 1
+            mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regresors (' conf_text ') from the outcome variable. For cross-validation analyses, this was done in the training set(s) prior to training the model(s), and the resulting model(s) were applied to the outcome data from the test set(s) before obtaining predicted outcomes.'];
+        else
+            mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regresors (' conf_text ') from the outcome variable prior to running the analyses.'];
+        end           
+    end
+elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr'})
+    if ~isfield(cfg, 'confound_names')
+        mdl_text = [mdl_text, ' covariates were included in the model to account for variance associated with user-defined nuisance regressors.'];
+    else
+        for i = 1:length(cfg.confound_names)
+            if i == 1
+                conf_text = cfg.confound_names{i};
+            else
+                conf_text = [conf_text ', ' cfg.confound_names{i}];
+            end
+        end
+        mdl_text = [mdl_text, ' Confound regression was performed to account for variance associated with user-defined nuisance regresors (' conf_text ').'];
     end
 end
+
+% Standardization
 if cfg.standardize == 1
     mdl_text = [mdl_text, ' Predictor variables were standardized to have means equal to 0 and standard deviations equal to 1.'];
 elseif cfg.standardize == 2
@@ -230,7 +258,7 @@ if cfg.optimize_hyperparams == 1
 end
 
 %%% Inferential modeling methods
-if cfg.fit_explanatory_model == 1
+if cfg.fit_explanatory_model == 1 && ~strcmp(cfg.model_spec, 'prop_sub')
     expl_text = [mdl_text, ' An inferential model was fit to the full dataset.'];
     if cfg.optimize_hyperparams == 1 && cfg.cross_validation == 1
         expl_text = [expl_text ' ' hp_opt_text];
@@ -283,4 +311,16 @@ if cfg.fit_explanatory_model == 1
     method_text = expl_text;
 elseif cfg.fit_explanatory_model == 0 && cfg.cross_validation == 1
     method_text = [mdl_text, cv_text];
+elseif cfg.fit_explanatory_model == 1 && strcmp(cfg.model_spec, 'prop_sub')
+    expl_text = [mdl_text, ' Proportional overlaps were generated for each group by summing binary predictor features across all observations within each group and dividing by the total number of observations in each group. The resulting proportional overlap map for the group coded -1 was then subtracted from the proportional overlap for the group coded +1, resulting in a proportional difference map.'];
+    if cfg.permutation == 1
+        expl_text = [expl_text ' To determine the significance of the inferential model compared to an empirical null distribution of model fits, permutation testing was performed using ' num2str(cfg.perm.n_perm) ' permutation iterations.'];
+        if cfg.perm.coeff_cfwe == 1
+            expl_text = [expl_text, ' The continuous FWE method (Mirman et al., 2017) was used to determine a single family-wise error threshold across all predictors at predictor thresholds ' ...
+                'of [1,10,50,100,500,1000].'];
+        end
+    end    
+    method_text = expl_text;
+end
+
 end

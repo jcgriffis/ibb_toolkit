@@ -13,13 +13,13 @@ nifti_hdr = niftiinfo(model_results.cfg.mask_path);
 % Change header info for continuous output images
 nifti_hdr.Datatype = 'single';
 nifti_hdr.BitsPerPixel = 32;
-nifti_hdr.raw.dime.datatype= 16;
-nifti_hdr.raw.dime.bitpix= 32;
+nifti_hdr.raw.dime.datatype = 16;
+nifti_hdr.raw.dime.bitpix = 32;
 nifti_out = single(nifti_out);
 
 % Mass univariate correlations
-if strcmp(model_results.cfg.model_spec, 'municorr') || strcmp(model_results.cfg.model_spec, 'munilr') || strcmp(model_results.cfg.model_spec, 'bmunz') || strcmp(model_results.cfg.model_spec, 'ttest')
-    write_mass_unicorr_weight_maps(nifti_out, nifti_hdr, model_results);
+if strcmp(model_results.cfg.model_spec, 'municorr') || strcmp(model_results.cfg.model_spec, 'munilr') || strcmp(model_results.cfg.model_spec, 'bmunz') || strcmp(model_results.cfg.model_spec, 'ttest') || strcmp(model_results.cfg.model_spec, 'muniolsr') || strcmp(model_results.cfg.model_spec, 'prop_sub')
+    write_mass_uni_weight_maps(nifti_out, nifti_hdr, model_results);
 else
     write_mlsm_weight_maps(nifti_out, nifti_hdr, model_results);
 end

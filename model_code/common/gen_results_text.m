@@ -82,7 +82,18 @@ switch cfg.model_spec
                 result_text = [result_text, ' Permutation testing on the full cross-validation procedure indicated that the average cross-validation area under the ROC curve was not greater than expected given the permutation null distribution (p=' num2str(cv_results.perm_pval) ').'];
             end
         end 
-    case {'municorr', 'bmunz', 'olsr', 'munilr', 'ttest'}
-        
-           
+    case {'municorr', 'bmunz', 'olsr', 'munilr', 'ttest', 'muniolsr'}
+        if isfield(model_results, 'perm')
+            if isfield(model_results.perm, 'cfwe')
+                crit_val = string(fieldnames(model_results.perm.cfwe));
+                if strcmp(model_results.cfg.model_spec, 'bmunz')
+                    model_results.tstat = model_results.coeff;
+                end
+                for i = 1:length(crit_val)
+                    n_survive = numel(find(model_results.tstat >= model_results.perm.cfwe.(crit_val(i))));
+                    v_thresh = strsplit(crit_val(i), '_');
+                    result_text = [result_text, 'For the continuous FWE analyses, the number of surviving voxels at each voxel count threshold (v) was evaluated. At a critical voxel threshold of v=' num2str(v_thresh{end}) ', ' num2str(n_survive) ' voxels survived thresholding. '];
+                end
+            end
+        end                   
 end

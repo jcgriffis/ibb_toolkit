@@ -19,7 +19,8 @@ elseif ~isempty(cfg.confounds) && cfg.cat_Y == 1 && ~contains(cfg.model_spec, {'
     X = regress_confounds_from_X(X, cfg.confounds);
     disp('Continuing analysis with X residuals as predictor variables');  
 elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr'})
-    disp('For selected modeling strategy, confounds are included as nuisance covariates in the model.');
+    disp('For selected modeling strategy, confounds are included as nuisance covariates in the model. Standardizing continuous predictors');
+    
 end
 
 % Standardize data as indicated in cfg
@@ -80,7 +81,7 @@ switch cfg.model_spec
     case 'ttest'
         model_results = run_ttests(X, Y, cfg, model_results);
     case 'prop_sub'
-        model_results = run_proportional_subtraction(X, Y, cfg, model_results);
+        model_results = run_proportional_subtraction(X, Y, model_results);
 end
 
 % Permutation tests

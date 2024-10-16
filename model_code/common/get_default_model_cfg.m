@@ -118,6 +118,10 @@ switch cfg.model_spec
         cfg.cat_Y = 1;
         cfg.hp_opt = [];        
         addpath(fullfile(cfg.model_dir, 'mass_univariate'));      
+    case 'muniolsr'
+        cfg.cat_Y = 0;
+        cfg.hp_opt = [];
+        addpath(fullfile(cfg.model_dir, 'mass_univariate'));
     case 'bmunz' % Brunner-Munzel test - limited functionality (only for fit_explanatory_model, no bootstrap functionality)
         cfg.cat_Y = 0;
         cfg.hp_opt = [];        
@@ -127,6 +131,10 @@ switch cfg.model_spec
         cfg.hp_opt = [];        
         cfg.vartype = 'unequal'; % unequal variances t-test
         addpath(fullfile(cfg.model_dir, 'mass_univariate'))
+    case 'prop_sub' % Proportional subtraction analysis
+        cfg.cat_Y = 1;
+        cfg.hp_opt = [];
+        addpath(fullfile(cfg.model_dir, 'mass_univariate'));
     otherwise
         warning('Model type not provided as input - make sure to set model-specific CFG fields since they will not be set by default!' );
 end
@@ -231,7 +239,7 @@ if cfg.fit_explanatory_model == 1
         % Iterations
         cfg.perm.n_perm = 1000; % number of permutation iterations (1000 is usually good enough unless you want voxel-level p-values; minimum p at 1000 iterations is 0.0009)
         
-        if ~contains(cfg.model_spec, {'municorr', 'ttest', 'bmunz', 'munilr'})
+        if ~contains(cfg.model_spec, {'municorr', 'ttest', 'bmunz', 'munilr', 'muniolsr', 'prop_sub'})
             % Permutation p-value options (cFWE turned on for mass univariate analyses)
             cfg.perm.coeff_cfwe = 0; % Perform continuous FWE correction for voxel permutation p-values, uses value set by fwe_thresh (Mirman et al., 2018 - Neuropsycholgia; note - this is only proven for mass-univariate statistics, but empirically it seems to work well with ridge regression and reasonably well with SVR; for PLS it is observed to be hyper-conservative)
             cfg.perm.coeff_p = 0; % compute voxel-wise permutation p-values (i.e., minimum achievable is 1 / (n_perm + 1))
