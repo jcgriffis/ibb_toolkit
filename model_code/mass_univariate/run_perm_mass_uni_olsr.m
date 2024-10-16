@@ -1,28 +1,26 @@
-function model_results = run_perm_mass_uni_lr(X, Y, cfg, model_results)
+function model_results = run_perm_mass_uni_olsr(X, Y, cfg, model_results)
     
-% Permutation tests for mass univariate logistic regressions - takes forever
+% Permutation tests for mass univariate OLS regressions - takes forever
 % Joseph Griffis 2024
+
+% Residualize Y if necessary for Freedman-Lane (Winkler et al., 2014)
+if ~isempty(cfg.confounds)
+    mdl = fitlm(cfg.confounds, Y);
+    Y = mdl.Residuals.Raw;
+end
 
 % Get permuted Y
 n_perm = cfg.perm.n_perm;
-perm_Y = zeros(length(Y), n_perm);      
+perm_Y = zeros(length(Y), n_perm);        
 for i = 1:n_perm
     perm_Y(:,i) = Y(randperm(length(Y))');
 end    
 
-% glmfit requires Y to be in range [0,1]
-if min(perm_Y) == -1 
-    perm_Y(perm_Y < 0) = 0;
-end
-
-% Preallocate permutation correlation matrix
+% Preallocate permutation matrix
 t_perm = zeros(size(X,2), n_perm);
 
-% Define confounds (parfor doesn't like dot indexing)
+% Get confounds
 confounds = cfg.confounds;
-
-% Define options 
-options = statset('Display','off', 'MaxIter', 5);
 
 % Run permutations
 if cfg.parallel == 1
@@ -30,19 +28,19 @@ if cfg.parallel == 1
         perm_Yj = perm_Y(:,j);
         disp(['Running permutation analysis:' num2str(j)])
         parfor i = 1:length(t_perm)
-            warning('off', 'stats:glmfit:IllConditioned');       
-            warning('off', 'stats:glmfit:IterationLimit');        
-            [~,~,stats] = glmfit([X(:,i), confounds], perm_Yj, 'binomial', 'Options', options);
+            warning('off', 'stats:glmfit:IllConditioned');     
+            warning('off', 'stats:glmfit:IterationLimit');            
+            [~,~,stats] = glmfit([X(:,i), confounds], perm_Yj, 'normal');
             t_perm(i,j) = stats.t(2);
         end
     end
 else
     warning('off', 'stats:glmfit:IllConditioned');     
-    warning('off', 'stats:glmfit:IterationLimit');
+    warning('off', 'stats:glmfit:IterationLimit');    
     for j = 1:n_perm
         disp(['Running permutation analysis:' num2str(j)])
         for i = 1:length(t_perm)
-            [~,~,stats] = glmfit([X(:,i), confounds], perm_Y(:,j), 'binomial', 'Options', options);
+            [~,~,stats] = glmfit([X(:,i), confounds], perm_Y(:,j), 'normal');
             t_perm(i,j) = stats.t(2);
         end
     end
