@@ -33,7 +33,7 @@ elseif cfg.cat_Y == 0
         unique_vals_Y = unique(Y);
         unique_vals_X = unique(X(:));
         if length(unique_vals_Y) <= 2
-            if strcmp(cfg.model_spec, 'municorr') && length(unique_vals_X) > 2
+            if strcmp(cfg.model_spec, 'municorr') && length(unique_vals_X) == 2
                 error('Modeling approach assumes continuous outcome variable, but outcome variable only has two values. Check data and use classification approach if necessary.');
             elseif ~strcmp(cfg.model_spec, 'municorr')
                 error('Modeling approach assumes continuous outcome variable, but outcome variable only has two values. Check data and use classification approach if necessary.');
