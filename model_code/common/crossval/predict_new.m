@@ -21,7 +21,7 @@ if ~strcmp(model_results.cfg.model_spec, 'plsr') && ~strcmp(model_results.cfg.mo
 
     % Center and scale predictors if needed
     if isfield(model_results, 'Cx')
-        X_new = (X_new .* model_results.Sx) + model_results.Cx;
+        X_new = (X_new - model_results.Cx) ./ model_results.Sx;
     end        
     
     % Generate new predictions
@@ -39,7 +39,7 @@ else
     
     % Center and scale predictors if needed
     if isfield(model_results, 'Cx')
-        X_new = (X_new .* model_results.Sx) + model_results.Cx;
+        X_new = (X_new - model_results.Cx) ./ model_results.Sx;
     end        
     
     % Generate new predictions
@@ -55,7 +55,7 @@ end
 
 % Put continuous outcomes back on original scale if original model had standardized Y
 if model_results.cfg.cat_Y == 0 && isfield(model_results, 'Cy')
-    pred_y = (pred_y .* model_results.Sy) + model_results.Cy;
+    pred_y = (pred_y - model_results.Cy) + model_results.Sy;
 end
 
 end
