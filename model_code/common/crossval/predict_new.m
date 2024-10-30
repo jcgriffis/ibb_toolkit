@@ -55,7 +55,7 @@ end
 
 % Put continuous outcomes back on original scale if original model had standardized Y
 if model_results.cfg.cat_Y == 0 && isfield(model_results, 'Cy')
-    pred_y = (pred_y - model_results.Cy) + model_results.Sy;
+    pred_y = (pred_y .* model_results.Sy) + model_results.Cy;
 end
 
 end
