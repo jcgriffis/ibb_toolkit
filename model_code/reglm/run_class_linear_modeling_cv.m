@@ -106,7 +106,8 @@ else
     'Regularization', cfg.reg_type,...
     'Learner', cfg.learner,...
     'BetaTolerance', 0,...
-    'Cost', S, 'Options', statset('UseParallel',cfg.parallel));     
+    'Cost', S);     
+    opt_l = mdl.Lambda;
 end
 
 % Get optimal threshold from training set
