@@ -23,30 +23,31 @@ elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr'
 end
 
 % Standardize data as indicated in cfg
-if cfg.standardize == 1 % Convert X to z-scores
-    if cfg.cat_Y == 0
-        [X, model_results.Cx, model_results.Sx] = normalize(X);
-        X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
-    elseif cfg.cat_Y == 1
-        [X, model_results.Cx, model_results.Sx] = normalize(X);
-        X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
+if cfg.standardize > 0
+    if ~isfield(cfg, 'standardize_method')
+        cfg.standardize_method = 'zscore';
+        cfg.standardize_type = 'std';
     end
-elseif cfg.standardize == 2 % Convert Y to z-scores 
-    if cfg.cat_Y == 0
-        [Y, model_results.Cy, model_results.Sy] = normalize(Y);
-    else
-        disp('Cannot standardize categorical outcome - ignoring standardization flag and seting to 0.');
-        cfg.standardize = 0;
+    if cfg.standardize == 1 % Standardize X
+        [X, model_results.Cx, model_results.Sx] = normalize(X, cfg.standardize_method, cfg.standardize_type);
+        X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
+    elseif cfg.standardize == 2 % Standardize Y
+        if cfg.cat_Y == 0
+            [Y, model_results.Cy, model_results.Sy] = normalize(Y, cfg.standardize_method, cfg.standardize_type);
+        else
+            disp('Cannot standardize categorical outcome - ignoring standardization flag and seting to 0.');
+            cfg.standardize = 0;
+        end
+    elseif cfg.standardize == 3 % Standardize X and Y
+        [X, model_results.Cx, model_results.Sx] = normalize(X, cfg.standardize_method, cfg.standardize_type);
+        X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
+        if cfg.cat_Y == 0
+            [Y, model_results.Cy, model_results.Sy] = normalize(Y, cfg.standardize_method, cfg.standardize_type);    
+        else
+            cfg.standardize = 1;
+            disp('Cannot standardize categorical outcome - ignoring standardization flag and seting to 1.');
+        end        
     end
-elseif cfg.standardize == 3 % Convert X and Y to z-scores
-    [X, model_results.Cx, model_results.Sx] = normalize(X);
-    X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
-    if cfg.cat_Y == 0
-        [Y, model_results.Cy, model_results.Sy] = normalize(Y);    
-    else
-        cfg.standardize = 1;
-        disp('Cannot standardize categorical outcome - ignoring standardization flag and seting to 1.');
-    end        
 end
 
 % Fit full-sample model if indicated
