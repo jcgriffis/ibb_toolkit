@@ -113,12 +113,22 @@ elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr'
 end
 
 % Standardization
-if cfg.standardize == 1
+if cfg.standardize == 1 && ~isfield(cfg, 'standardize_method')
+    cfg.standardize_method = 'zscore';
+end
+if cfg.standardize == 1 && ~strcmp(cfg.standardize_method, 'range')
     mdl_text = [mdl_text, ' Predictor variables were standardized to have means equal to 0 and standard deviations equal to 1.'];
-elseif cfg.standardize == 2
+elseif cfg.standardize == 2 && ~strcmp(cfg.standardize_method, 'range')
     mdl_text = [mdl_text, ' Outcome variables were standardized to have means equal to 0 and standard deviations equal to 1.'];
-elseif cfg.standardize == 3
+elseif cfg.standardize == 3 && ~strcmp(cfg.standardize_method, 'range')
     mdl_text = [mdl_text, ' Predictor and outcome variables were standardized to have means equal to 0 and standard deviations equal to 1.'];    
+end
+if cfg.standardize == 1 && strcmp(cfg.standardize_method, 'range')
+    mdl_text = [mdl_text, ' Predictor variables were standardized to have range equal to [' num2str(cfg.standardize_type(1,1)) ', ' num2str(cfg.standardize_type(1,2)) '].'];
+elseif cfg.standardize == 2 && strcmp(cfg.standardize_method, 'range')
+    mdl_text = [mdl_text, ' Outcome variables were standardized to have range equal to [' num2str(cfg.standardize_type(1,1)) ', ' num2str(cfg.standardize_type(1,2)) '].'];
+elseif cfg.standardize == 3 && strcmp(cfg.standardize_method, 'range')
+    mdl_text = [mdl_text, ' Predictor and outcome variables were standardized to have range equal to [' num2str(cfg.standardize_type(1,1)) ', ' num2str(cfg.standardize_type(1,2)) '].'];
 end
 
 
@@ -200,11 +210,17 @@ end
 if cfg.optimize_hyperparams == 1
     switch cfg.model_spec
         case {'plsr', 'pls_da'}
-            param_names = ' k parameter (number of PLS components)';
+            param_names = ' k parameter (number of PLS components) ';
         case {'lasso', 'ridge', 'logistic_lasso', 'logistic_ridge', 'rlinsvr', 'rlinsvc'}
             param_names = 'regularization parameter (lambda)';
         case {'linsvr', 'kernsvr', 'linsvc', 'kernsvc'}
-            param_names = 'box constraint and kernel scale parameter';
+            if cfg.hp_opt.box_constraint.optimize == 1 && cfg.hp_opt.kernel_scale.optimize == 1
+                param_names = 'box constraint and kernel scale parameter';
+            elseif cfg.hp_opt.box_constraint.optimize == 1 && cfg.hp_opt.kernel_scale.optimize == 0
+                param_names = 'box constraint parameter';
+            elseif cfg.hp_opt.box_constraint.optimize == 0 && cfg.hp_opt.kernel_scale.optimize == 1
+                param_names = 'kernel scale parameter';
+            end
         case {'rensemble', 'censemble'}
             if iscellstr(cfg.hp_opt.to_optimize)
                 for i = 1:length(cfg.hp_opt.to_optimize)
@@ -260,7 +276,7 @@ end
 %%% Inferential modeling methods
 if cfg.fit_explanatory_model == 1 && ~strcmp(cfg.model_spec, 'prop_sub')
     expl_text = [mdl_text, ' An inferential model was fit to the full dataset.'];
-    if cfg.optimize_hyperparams == 1 && cfg.cross_validation == 1
+    if cfg.optimize_hyperparams == 1
         expl_text = [expl_text ' ' hp_opt_text];
     end
     if cfg.permutation == 1
@@ -304,7 +320,7 @@ if cfg.fit_explanatory_model == 1 && ~strcmp(cfg.model_spec, 'prop_sub')
     else
         if cfg.cat_Y == 1 && isfield(cfg, 'cost')
             if ~isequal(cfg.cost, [0, 1; 1, 0])
-                expl_text = [' The misclassification cost assigned to the class labeled -1 was set to ' num2str(cfg.cost(2,1)) ', and the misclassification cost assigned to the class labeled 1 was set to ' num2str(cfg.cost(1,2)) '.'];
+                expl_text = [expl_text ' The misclassification cost assigned to the class labeled -1 was set to ' num2str(cfg.cost(2,1)) ', and the misclassification cost assigned to the class labeled 1 was set to ' num2str(cfg.cost(1,2)) '.'];
             end
         end
     end

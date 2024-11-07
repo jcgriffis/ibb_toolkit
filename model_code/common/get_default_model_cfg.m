@@ -33,6 +33,7 @@ switch cfg.model_spec
         else
             cfg.cat_Y = 0;
         end        
+        cfg.standardize = 0;
     case {'lasso', 'ridge', 'rlinsvr', 'logistic_lasso', 'logistic_ridge', 'rlinsvc'} % Regularized linear models
         if strcmp(cfg.model_spec, {'lasso', 'ridge'})
             cfg.learner = 'leastsquares'; % OLS regression
@@ -53,7 +54,14 @@ switch cfg.model_spec
             cfg.reg_type = 'ridge'; % L2 ridge regularization
         end
         cfg.hp_opt.bayes_opt = 0;     
-        addpath(fullfile(cfg.model_dir, 'reglm'));              
+        addpath(fullfile(cfg.model_dir, 'reglm'));  
+        if ~contains(cfg.model_spec, 'svc')
+            cfg.standardize = 3;
+        else
+            cfg.standardize = 1;
+        end
+        cfg.standardize_method = 'range';        
+        cfg.standardize_type = [0, 1];
     case {'linsvr', 'kernsvr', 'linsvc', 'kernsvc'} % Support vector machines
         if contains(cfg.model_spec, 'lin')
             cfg.kernel = 'linear'; % linear SVR kernel
@@ -66,10 +74,27 @@ switch cfg.model_spec
         else
             cfg.cat_Y = 0;
         end
+        % Optimization parameters
+        cfg.hp_opt.box_constraint.optimize = 1; % Box constraint
+        cfg.hp_opt.box_constraint.range = [0.001, 100];
+        cfg.hp_opt.kernel_scale.optimize = 1; % Kernel scale
+        cfg.hp_opt.kernel_scale.range = [0.001, 100];
+        cfg.hp_opt.kernel_function.optimize = 0; % Kernel function (linear, polynomial, rbf)
+        cfg.hp_opt.poly_order.optimize = 0; % Polynomial order
+        cfg.hp_opt.standardize.optimize = 0; % Standardization (separate from toolkit standardization)
         cfg.hp_opt.bayes_opt = 1; % Do Bayesian hyper-parameter optimization
-        cfg.hp_opt.opt_iter = 60; % Number of objective function evaluations
-        cfg.hp_opt.repartition = true; % Repartition into train/test at each iteration 
+        cfg.hp_opt.opt_iter = 100; % Number of objective function evaluations
+        cfg.hp_opt.repartition = true; % Repartition into train/test at each iteration         
         addpath(fullfile(cfg.model_dir, 'nlinsvr'));
+        if contains(cfg.model_spec, 'svc')
+            cfg.standardize = 1;
+            cfg.standardize_method = 'range';
+            cfg.standardize_type = [0, 1];        
+        else
+            cfg.standardize = 3;
+            cfg.standardize_method = 'range';
+            cfg.standardize_type = [0, 1];            
+        end
     case {'rensemble', 'censemble'} % Ensemble predictive models
         if contains(cfg.model_spec, 'censemble')
             cfg.cost = [0, 1; 1, 0];
@@ -176,13 +201,6 @@ end
 %%%% Misc options
 if ~isfield(cfg, 'dtlvc')
     cfg.dtlvc = 0; % direct total lesion volume control (Zhang et al., 2014)
-end
-if ~isfield(cfg, 'standardize')
-    if strcmp(cfg.model_spec, 'kernsvr')
-        cfg.standardize = 2; % Variable standardization (1-standardize X; 2-standardize Y; 3-stanardize X & Y)
-    else
-        cfg.standardize = 0;
-    end
 end
 if ~isfield(cfg, 'strat_var')
     cfg.strat_var = []; % stratification variable (used to stratify groups for CV)
