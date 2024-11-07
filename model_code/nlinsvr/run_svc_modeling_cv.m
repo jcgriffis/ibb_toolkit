@@ -7,6 +7,38 @@ function [cv_results] = run_svc_modeling_cv(x_train, y_train, x_test, y_test, i,
 S.ClassNames = [-1, 1];
 S.ClassificationCosts = cfg.cost;
 
+% Set parameters for optimization
+if cfg.optimize_hyperparams == 1
+    params = hyperparameters('fitcsvm', x_train, y_train);
+    if cfg.hp_opt.box_constraint.optimize == 1
+        params(1).Optimize = true;
+        params(1).Range = cfg.hp_opt.box_constraint.range;
+    else
+        params(1).Optimize = false;
+    end
+    if cfg.hp_opt.kernel_scale.optimize == 1
+        params(2).Optimize = true;
+        params(2).Range = cfg.hp_opt.kernel_scale.range;
+    else
+        params(2).Optimize = false;
+    end
+    if cfg.hp_opt.kernel_function.optimize == 1
+        params(3).Optimize = true;
+    else
+        params(3).Optimize = false;
+    end
+    if cfg.hp_opt.poly_order.optimize == 1
+        params(4).Optimize = true;
+    else
+        params(4).Optimize = false;
+    end
+    if cfg.hp_opt.standardize.optimize == 1
+        params(5).Optimize = true;
+    else
+        params(5).Optimize = false;
+    end
+end
+
 if cfg.optimize_hyperparams == 1
 
     % Get hyper-parameter options and cross-validation partitions
@@ -16,7 +48,7 @@ if cfg.optimize_hyperparams == 1
     alpha = []; % sometimes model returns empty results despite convergence
     while isempty(alpha)
         mdl = fitcsvm(x_train,y_train,'KernelFunction', cfg.kernel,...
-            'OptimizeHyperparameters', {'BoxConstraint', 'KernelScale'},...
+            'OptimizeHyperparameters', params,...
             'HyperparameterOptimizationOptions', cv_results.hp_opt, ...
             'Cost', S);
         if isnan(mdl.Bias)

@@ -3,6 +3,38 @@ function [model_results] = run_svr_modeling(X, Y, cfg, model_results)
 % Use K-fold cross-validation to tune SVR hyper-parameters
 % Joseph Griffis 2023
 
+% Set parameters for optimization
+if cfg.optimize_hyperparams == 1
+    params = hyperparameters('fitcsvm', X, Y);
+    if cfg.hp_opt.box_constraint.optimize == 1
+        params(1).Optimize = true;
+        params(1).Range = cfg.hp_opt.box_constraint.range;
+    else
+        params(1).Optimize = false;
+    end
+    if cfg.hp_opt.kernel_scale.optimize == 1
+        params(2).Optimize = true;
+        params(2).Range = cfg.hp_opt.kernel_scale.range;
+    else
+        params(2).Optimize = false;
+    end
+    if cfg.hp_opt.kernel_function.optimize == 1
+        params(3).Optimize = true;
+    else
+        params(3).Optimize = false;
+    end
+    if cfg.hp_opt.poly_order.optimize == 1
+        params(4).Optimize = true;
+    else
+        params(4).Optimize = false;
+    end
+    if cfg.hp_opt.standardize.optimize == 1
+        params(5).Optimize = true;
+    else
+        params(5).Optimize = false;
+    end
+end
+
 % Optimize hyper-parameters if indicated
 if cfg.optimize_hyperparams == 1
 
@@ -13,7 +45,7 @@ if cfg.optimize_hyperparams == 1
     alpha = []; % sometimes model returns empty results despite convergence
     while isempty(alpha)
         mdl_final = fitrsvm(X,Y,'KernelFunction', cfg.kernel,...
-            'OptimizeHyperparameters', {'BoxConstraint', 'KernelScale'},...
+            'OptimizeHyperparameters', params,...
             'HyperparameterOptimizationOptions', model_results.hp_opt);
         if isnan(mdl_final.Bias)
             alpha = [];
