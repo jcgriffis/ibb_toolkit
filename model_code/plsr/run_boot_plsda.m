@@ -5,10 +5,10 @@
 
 % Joseph Griffis, 2018, Washington University in St. Louis    
 
-function [out] = run_boot_plsda(X,Y,k, cost, standardize)
+function [out] = run_boot_plsda(X,Y,k, cost, standardize, method, type)
 
     if standardize == 1 || standardize == 3
-        X = normalize(X);
+        X = normalize(X, method, type);
         X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
     end
 

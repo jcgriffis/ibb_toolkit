@@ -1,4 +1,4 @@
-function [out] = run_boot_svc(X, Y, C, gamma, kernel, standardize, cost)
+function [out] = run_boot_svc(X, Y, C, gamma, kernel, standardize, cost, method, type)
 
 % Run bootstrap analyses
 % Joseph Griffis 2024
@@ -11,7 +11,7 @@ else
 end
 
 if standardize == 1 || standardize == 3
-    [X] = normalize(X);
+    [X] = normalize(X, method, type);
     X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
 end
 

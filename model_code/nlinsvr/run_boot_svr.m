@@ -1,4 +1,4 @@
-function [out] = run_boot_svr(X, Y, C, gamma, kernel, standardize)
+function [out] = run_boot_svr(X, Y, C, gamma, kernel, standardize, method, type)
 
 % Run bootstrap analyses
 % Joseph Griffis 2024
@@ -11,15 +11,16 @@ else
 end
 
 if standardize == 1
-    [X] = normalize(X);
-    X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
-elseif standardize == 2
-    Y = normalize(Y);
-elseif standardize == 3
-    [X] = normalize(X);
+    [X] = normalize(X, method, type);
     X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0   
-    Y = normalize(Y);
+elseif standardize == 2
+    Y = normalize(Y, method, type);
+elseif standardize == 3
+    [X] = normalize(X, method, type);
+    X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0   
+    Y = normalize(Y, method, type);
 end
+
 
 alpha = [];
 while isempty(alpha)
