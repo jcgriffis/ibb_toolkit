@@ -113,7 +113,7 @@ elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr'
 end
 
 % Standardization
-if cfg.standardize == 1 && ~isfield(cfg, 'standardize_method')
+if cfg.standardize > 0 && ~isfield(cfg, 'standardize_method')
     cfg.standardize_method = 'zscore';
 end
 if cfg.standardize == 1 && ~strcmp(cfg.standardize_method, 'range')
