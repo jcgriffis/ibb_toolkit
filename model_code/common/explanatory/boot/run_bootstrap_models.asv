@@ -22,29 +22,28 @@ end
 standardize = cfg.standardize;
 if cfg.standardize > 0 && ~isfield(cfg, 'standardize_method')
     cfg.standardize_method = 'zscore';
-    cfg.standardize_type = 'std';
+    method = 'zscore';
+    type = 'std';
 elseif cfg.standardize > 0 && isfield(cfg, 'standardize_method')
-    if strcmp(cfg.standardize_method, 'range') && ~isfield(cfg, 'standardize_type')
-        cfg.standardize_type = [0,1];
-    elseif strcmp(cfg.standardize_method, 'zscore') && ~isfield(cfg, 'standardize_type')
-        cfg.standardize_type = 'std';
+    method = cfg.standardize_method;
+    if strcmp(method, 'range') && ~isfield(cfg, 'standardize_type')
+        type = [0,1];
+    elseif strcmp(method, 'range') && isfield(cfg, 'standardize_type')
+        type = cfg.standardize_type;
+    elseif strcmp(method, 'zscore') && ~isfield(cfg, 'standardize_type')
+        type = 'std';
     end
-elseif cfg.standardize == 0 
-    cfg.standardize_method = [];
-    cfg.standardize_type = [];
 end
-method = cfg.standardize_method;
-type = cfg.standardize_type;
 
 %%% Specify bootstrap analysis parameters based on modeling approach
 switch cfg.model_spec
     case 'plsr'
         opt_k = model_results.opt_k; % Optimized component number
-        bootfun = @(IV,DV) run_boot_plsr(IV,DV,opt_k,standardize, method, type); 
+        bootfun = @(IV,DV) run_boot_plsr(IV,DV,opt_k,standardize, method); 
     case 'pls_da'
         opt_k = model_results.opt_k; % Optimized component number
         cost = cfg.cost;
-        bootfun = @(IV,DV) run_boot_plsda(IV,DV,opt_k,cost,standardize, method, type); 
+        bootfun = @(IV,DV) run_boot_plsda(IV,DV,opt_k,cost,standardize, method); 
     case {'ridge', 'lasso', 'rlinsvr'}
         reg_type = cfg.reg_type;
         lambda = model_results.Lambda;
@@ -59,7 +58,7 @@ switch cfg.model_spec
         else
             reg_type = 0;
         end
-        bootfun = @(IV, DV) run_boot_regmdl(IV, DV, lambda, learner, reg_type, standardize, method, type); 
+        bootfun = @(IV, DV) run_boot_regmdl(IV, DV, lambda, learner, reg_type, standardize); 
     case {'logistic_ridge', 'logistic_lasso', 'rlinsvc'}
         reg_type = cfg.reg_type;
         lambda = model_results.Lambda;
@@ -75,7 +74,7 @@ switch cfg.model_spec
         else
             reg_type = 0;
         end
-        bootfun = @(IV, DV) run_boot_classmdl(IV, DV, lambda, learner, reg_type, cost, standardize, method, type);
+        bootfun = @(IV, DV) run_boot_classmdl(IV, DV, lambda, learner, reg_type, cost, standardize);
     case {'linsvr', 'kernsvr'}
         C = model_results.C;
         gamma = model_results.gamma;
@@ -84,7 +83,7 @@ switch cfg.model_spec
         elseif strcmp(cfg.kernel, 'rbf') == 1
             kernel = 1;
         end        
-        bootfun = @(IV,DV) run_boot_svr(IV,DV,C,gamma,kernel,standardize, method, type); 
+        bootfun = @(IV,DV) run_boot_svr(IV,DV,C,gamma,kernel,standardize); 
     case {'linsvc', 'kernsvc'}
         C = model_results.C;
         gamma = model_results.gamma;
@@ -95,7 +94,7 @@ switch cfg.model_spec
         elseif strcmp(cfg.kernel, 'rbf') == 1
             kernel = 1;
         end
-        bootfun = @(IV,DV) run_boot_svc(IV,DV,C,gamma,kernel,standardize, cost, method, type);
+        bootfun = @(IV,DV) run_boot_svc(IV,DV,C,gamma,kernel,standardize, cost);
 end
 
 % Run bootstrap analyses
