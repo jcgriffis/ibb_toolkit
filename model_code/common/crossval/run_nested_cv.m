@@ -63,7 +63,7 @@ end
 
 % Get correlation (or Fisher exact test) between mean out-of-fold predictions for all patients and observed outcome, compute p-value (analogous to LESYMAP)
 if cfg.cat_Y == 0 && perm_flag == 0
-    [cv_results.all.corr, cv_results.all.corr_pval] = corr(get_summary(cv_results.all.pred_y, 2), Y);
+    [cv_results.all.corr, cv_results.all.corr_pval] = corr(get_summary(cv_results.all.pred_y, 2), Y, 'tail', 'right');
     disp(['Full-sample Cross-Validation Correlation Test: r=' num2str(cv_results.all.corr) ', p=' num2str(cv_results.all.corr_pval)]);
 elseif cfg.cat_Y == 1 && perm_flag == 0
     cv_results.all.confusion = confusionchart(Y, mode(cv_results.all.pred_y,2));
