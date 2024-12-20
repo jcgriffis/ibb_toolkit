@@ -209,6 +209,9 @@ end
 if ~isfield(cfg, 'confounds')
     cfg.confounds = []; % confound variables (will be regressed out of outcome)
 end
+if ~isfield(cfg, 'standardize') 
+    cfg.standardize = 0;
+end
 
 %%%% Modeling options
 
