@@ -119,7 +119,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
             else
                 app.CSVTtext.Value = fullfile(csv_path, csv_file);
             end
-            my_csv = readtable(fullfile(csv_path, csv_file));
+            my_csv = readtable(fullfile(csv_path, csv_file),'NumHeaderLines', 0, 'Delimiter', ',');
             my_vars = my_csv.Properties.VariableNames;
             my_vars = setdiff(my_vars, "study_id");
             app.SelectOutcomeVariableYListBox.Items = my_vars;
@@ -284,12 +284,12 @@ classdef run_modeling_gui < matlab.apps.AppBase
             cfg.parallel = app.UseParallelProcessingRecommendedCheckBox.Value;
             
             % Image output
-            cfg.write_perm_images = app.WritePermutationImagesCheckBox.Value;
-            cfg.write_boot_images = app.WriteBootstrapImagesCheckBox.Value;
-            cfg.write_jack_images = 0;
+            cfg.perm.write_perm_images = app.WritePermutationImagesCheckBox.Value;
+            cfg.boot.write_boot_images = app.WriteBootstrapImagesCheckBox.Value;
+            cfg.jack.write_jack_images = 0;
 
             % Format and load behavioral and image data 
-            beh_csv = readtable(string(app.CSVTtext.Value));
+            beh_csv = readtable(string(app.CSVTtext.Value), 'NumHeaderLines', 0, 'Delimiter', ',');
             beh_col = app.SelectOutcomeVariableYListBox.Value;
             id_col = "study_id";
             
@@ -377,7 +377,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
             cd(cfg.out_dir);
 
             % Print results for regression models 
-            if ~contains(cfg.model_spec, ["municorr", "bmunz", "ttest", "munilr", "muniolsr", "prop_sub"])
+            if ~contains(cfg.model_spec, ["municorr", "bmunz", "ttest", "munilr", "muniolsr", "munimnr", "prop_sub"])
                 if cfg.fit_explanatory_model == 1 && cfg.cat_Y == 0
                     
                    % Print model R-squared
@@ -385,6 +385,8 @@ classdef run_modeling_gui < matlab.apps.AppBase
                    disp('--------Model Result Summary-------');
                    disp('-----Inferential Model Results-----');
                    disp('-----------------------------------');
+                   disp('Warning - This R-squared statistic is from the model fit to the full dataset and may reflect overfitting.');
+                   disp('Interpret this result with extreme caution. It is recommended to use cross-validtion statistics for interpreting model performance.');                   
                    disp(['Model R-squared: ' num2str(model_results.r2)]);
                     
                    % Print additional statistics depending on analysis settings
@@ -394,10 +396,12 @@ classdef run_modeling_gui < matlab.apps.AppBase
                        disp(['Upper: ' num2str(model_results.boot.r2_ci(2))]);
                    end
                    if cfg.permutation == 1 
+                       disp('----- Permutation Test Results -----')
                        disp(['Permutation Test: p=' num2str(model_results.perm.model_pval)]);
                    end
                    if cfg.cross_validation == 1
                        load(fullfile(cfg.out_dir, 'cv_results.mat'));
+                       disp('------ Cross-validation Test Results -------');
                        disp(['Cross-validation Correlation: r=' num2str(cv_results.all.corr) ', p=' num2str(cv_results.all.corr_pval)]);
                        if isfield(cv_results, 'perm_pval')
                            disp('-----Predictive Model Results-----');
@@ -425,7 +429,9 @@ classdef run_modeling_gui < matlab.apps.AppBase
                    diary('explanatory_model_results.txt')
                    disp('--------Model Result Summary-------');
                    disp('-----Inferential Model Results-----');
-                   disp('-----------------------------------')
+                   disp('-----------------------------------');
+                   disp('Warning - These accuracy and ROC statistics are from the model fit to the full dataset and may reflect overfitting.');
+                   disp('Interpret these results with extreme caution. It is recommended to use cross-validtion statistics for interpreting model performance.');
                    disp(['Model Accuracy (Group -1): ' num2str(model_results.classrate(1))]);
                    disp(['Model Accuracy (Group 1): ' num2str(model_results.classrate(2))]);               
                    disp(['Model Accuracy (Overall): ' num2str(model_results.classrate(3))]);
@@ -447,9 +453,11 @@ classdef run_modeling_gui < matlab.apps.AppBase
                        disp(['Upper: ' num2str(model_results.boot.roc_auc_ci(2,1))]);                   
                    end
                    if cfg.permutation == 1 
+                      disp ('------ Permutation Test Results --------')
                       disp(['Permutation Test (AUC): p=' num2str(model_results.perm.model_pval)]);                   
                    end
                    if cfg.cross_validation == 1
+                      disp('------ Cross-Validation Test Results -------')
                       load(fullfile(cfg.out_dir, 'cv_results.mat'));
                       disp(['Cross-validation Fisher Exact Test: stat=' num2str(cv_results.all.fisher_stat.OddsRatio) ', p=' num2str(cv_results.all.fisher_pval)]);
                       if isfield(cv_results, 'perm_pval')
@@ -654,7 +662,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
             else
                 app.RegressLesionVolumefromYCheckBox.Text = 'Regress Lesion Volume from Y';
             end
-            if contains(value, ["municorr", "ttest", "bmunz", "munilr", "muniolsr", ...
+            if contains(value, ["municorr", "ttest", "bmunz", "munilr", "muniolsr", "munimnr", ...
                     'prop_sub'])
                 % Bootstrap options
                 app.BootCheckBox.Enable = 0;
@@ -1303,7 +1311,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
 
             % Create SelectModelDropDown
             app.SelectModelDropDown = uidropdown(app.UIFigure);
-            app.SelectModelDropDown.Items = {'plsr', 'pls_da', 'ridge', 'logistic_ridge', 'linsvr', 'linsvc', 'kernsvr', 'kernsvc', 'rensemble', 'censemble', 'municorr', 'ttest', 'bmunz', 'munilr', 'muniolsr', 'prop_sub'};
+            app.SelectModelDropDown.Items = {'plsr', 'pls_da', 'ridge', 'logistic_ridge', 'linsvr', 'linsvc', 'kernsvr', 'kernsvc', 'rensemble', 'censemble', 'municorr', 'ttest', 'bmunz', 'munilr', 'munimnr', 'muniolsr', 'prop_sub'};
             app.SelectModelDropDown.ValueChangedFcn = createCallbackFcn(app, @SelectModelDropDownValueChanged, true);
             app.SelectModelDropDown.FontSize = 14;
             app.SelectModelDropDown.BackgroundColor = [0.651 0.651 0.651];
