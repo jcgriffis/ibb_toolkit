@@ -9,44 +9,46 @@ function model_results = fit_explanatory_model(X, Y, model_results, cfg)
 % Joseph Griffis 2024
 
 %%%%% Regress out confound variables if they're included
-if ~isempty(cfg.confounds) && cfg.cat_Y == 0 && ~contains(cfg.model_spec, {'muniolsr'})
+if ~isempty(cfg.confounds) && cfg.cat_Y == 0 && ~contains(cfg.model_spec, {'muniolsr', 'munimnr'})
     disp('Regressing confounds out of Y...');    
     [Y, model_results.r2_confound, model_results.coeff_confound] = regress_confounds_from_Y(Y, cfg.confounds);
     disp(['Confound model explained ' num2str(round(model_results.r2_confound, 4)*100) '% variance in Y.']);
     disp('Continuing analysis with Y residuals as target variable');
 elseif ~isempty(cfg.confounds) && cfg.cat_Y == 1 && ~contains(cfg.model_spec, {'munilr', 'prop_sub'})
     disp('Regressing confounds out of X...')
-    X = regress_confounds_from_X(X, cfg.confounds);
+    [X, model_results.coeff_confound] = regress_confounds_from_X(X, cfg.confounds);
     disp('Continuing analysis with X residuals as predictor variables');  
-elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr'})
+elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr', 'munimnr'})
     disp('For selected modeling strategy, confounds are included as nuisance covariates in the model.');
 end
 
 % Standardize data as indicated in cfg
-if cfg.standardize > 0
-    if ~isfield(cfg, 'standardize_method')
-        cfg.standardize_method = 'zscore';
-        cfg.standardize_type = 'std';
-    end
-    if cfg.standardize == 1 % Standardize X
-        [X, model_results.Cx, model_results.Sx] = normalize(X, cfg.standardize_method, cfg.standardize_type);
-        X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
-    elseif cfg.standardize == 2 % Standardize Y
-        if cfg.cat_Y == 0
-            [Y, model_results.Cy, model_results.Sy] = normalize(Y, cfg.standardize_method, cfg.standardize_type);
-        else
-            disp('Cannot standardize categorical outcome - ignoring standardization flag and seting to 0.');
-            cfg.standardize = 0;
+if isfield(cfg, 'standardize')
+    if cfg.standardize > 0
+        if ~isfield(cfg, 'standardize_method')
+            cfg.standardize_method = 'zscore';
+            cfg.standardize_type = 'std';
         end
-    elseif cfg.standardize == 3 % Standardize X and Y
-        [X, model_results.Cx, model_results.Sx] = normalize(X, cfg.standardize_method, cfg.standardize_type);
-        X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
-        if cfg.cat_Y == 0
-            [Y, model_results.Cy, model_results.Sy] = normalize(Y, cfg.standardize_method, cfg.standardize_type);    
-        else
-            cfg.standardize = 1;
-            disp('Cannot standardize categorical outcome - ignoring standardization flag and seting to 1.');
-        end        
+        if cfg.standardize == 1 % Standardize X
+            [X, model_results.Cx, model_results.Sx] = normalize(X, cfg.standardize_method, cfg.standardize_type);
+            X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
+        elseif cfg.standardize == 2 % Standardize Y
+            if cfg.cat_Y == 0 || contains(cfg.model_spec, {'munimnr'})
+                [Y, model_results.Cy, model_results.Sy] = normalize(Y, cfg.standardize_method, cfg.standardize_type);
+            else
+                disp('Cannot standardize categorical outcome - ignoring standardization flag and seting to 0.');
+                cfg.standardize = 0;
+            end
+        elseif cfg.standardize == 3 % Standardize X and Y
+            [X, model_results.Cx, model_results.Sx] = normalize(X, cfg.standardize_method, cfg.standardize_type);
+            X(isnan(X))=0; % Since normalize will cause columns to become NaN if they are all 0
+            if cfg.cat_Y == 0 || contains(cfg.model_spec, {'munimnr'})
+                [Y, model_results.Cy, model_results.Sy] = normalize(Y, cfg.standardize_method, cfg.standardize_type);    
+            else
+                cfg.standardize = 1;
+                disp('Cannot standardize categorical outcome - ignoring standardization flag and seting to 1.');
+            end        
+        end
     end
 end
 
@@ -75,7 +77,9 @@ switch cfg.model_spec
     case 'munilr'
         model_results = run_mass_univariate_lr(X, Y, cfg, model_results);
     case 'muniolsr'
-        model_results = run_mass_univariate_olsr(X, Y, cfg, model_results);        
+        model_results = run_mass_univariate_olsr(X, Y, cfg, model_results);   
+    case 'munimnr'
+        model_results = run_mass_univariate_mnr(X, Y, cfg, model_results);
     case 'bmunz'
         model_results = run_brunner_munzel_test(X, Y, cfg, model_results);
     case 'ttest'
@@ -106,6 +110,8 @@ if cfg.permutation == 1
             [model_results] = run_perm_mass_uni_lr(X, Y, cfg, model_results);  
         case 'muniolsr'
             [model_results] = run_perm_mass_uni_olsr(X, Y, cfg, model_results);  
+        case 'munimnr'
+            [model_results] = run_perm_mass_uni_mnr(X, Y, cfg, model_results);              
     end    
 end
 
