@@ -11,7 +11,7 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
     unc_thresh = unc_thresh{2};
 
     % Unthresholded coeff weight map 
-    if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~ strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'muniolsr')
+    if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~ strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'munimnr')
         nifti_out(:) = 0;
         nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.coeff;
         niftiwrite(nifti_out, 'corr_map_unthresh', nifti_hdr);     
@@ -35,7 +35,7 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
         nifti_out(:) = 0;
         nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.tstat .* (model_results.coeff_vfwe_pvals < model_results.cfg.fwe_thresh);
         niftiwrite(nifti_out, [stat_name '_vfwe' fwe_thresh '.nii'], nifti_hdr);
-        if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') 
+        if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'munimnr')
             nifti_out(:) = 0;
             nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.coeff .* (model_results.coeff_vfwe_pvals < model_results.cfg.fwe_thresh);
             niftiwrite(nifti_out, ['coeff_vfwe' fwe_thresh '.nii'], nifti_hdr);      
@@ -47,7 +47,7 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
         nifti_out(:) = 0;
         nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.tstat .* (model_results.coeff_vfdr_pvals < model_results.cfg.fdr_thresh);
         niftiwrite(nifti_out, [stat_name '_vfdr' fdr_thresh '.nii'], nifti_hdr);
-        if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') 
+        if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest')  && ~strcmp(model_results.cfg.model_spec, 'munimnr')
             nifti_out(:) = 0;
             nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.coeff .* (model_results.coeff_vfdr_pvals < model_results.cfg.fdr_thresh);
             niftiwrite(nifti_out, ['coeff_vfdr' fdr_thresh '.nii'], nifti_hdr);   
@@ -68,7 +68,7 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
                 nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.tstat .* (model_results.perm.p_coeff < model_results.cfg.unc_thresh);
                 niftiwrite(nifti_out, [stat_name '_uncp' unc_thresh '.nii'], nifti_hdr);
                 nifti_out(:) = 0;
-                if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest')
+                if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'munimnr')
                     nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.coeff .* (model_results.perm.p_coeff < model_results.cfg.unc_thresh);
                     niftiwrite(nifti_out, ['coeff_uncp' unc_thresh '.nii'], nifti_hdr);        
                 end
@@ -80,7 +80,7 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
                 nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.tstat .* (model_results.perm.fwep_coeff < model_results.cfg.fwe_thresh);
                 niftiwrite(nifti_out, [stat_name '_vfwe' fwe_thresh '.nii'], nifti_hdr);
                 nifti_out(:) = 0;
-                if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest')
+                if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'munimnr')
                     nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.coeff .* (model_results.perm.fwep_coeff < model_results.cfg.fwe_thresh);
                     niftiwrite(nifti_out, ['coeff_vfwe' fwe_thresh '.nii'], nifti_hdr);        
                 end
@@ -92,7 +92,7 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
                 nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.tstat .* (model_results.perm.fdrp_coeff < model_results.cfg.fwe_thresh);
                 niftiwrite(nifti_out, [stat_name '_vfdr' fdr_thresh '.nii'], nifti_hdr);
                 nifti_out(:) = 0;
-                if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') 
+                if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest')  && ~strcmp(model_results.cfg.model_spec, 'munimnr')
                     nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.coeff .* (model_results.perm.fdrp_coeff < model_results.cfg.fwe_thresh);
                     niftiwrite(nifti_out, ['coeff_vfdr' fdr_thresh '.nii'], nifti_hdr);        
                 end
@@ -104,7 +104,7 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
                 if ~isfolder('Permutation_Result_Images')
                     mkdir('Permutation_Result_Images')
                 end
-                if strcmp(model_results.cfg.model_spec, 'munilr') || strcmp(model_results.cfg.model_spec, 'ttest') || strcmp(model_results.cfg.model_spec, 'muniolsr')
+                if strcmp(model_results.cfg.model_spec, 'munilr') || strcmp(model_results.cfg.model_spec, 'ttest') || strcmp(model_results.cfg.model_spec, 'muniolsr') || strcmp(model_results.cfg.model_spec, 'munimnr')
                     model_results.coeff = model_results.tstat;
                 end
                 cd(fullfile(model_results.cfg.out_dir, 'Permutation_Result_Images'));
@@ -118,7 +118,7 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
                         my_coeff = model_results.coeff .* (coeff_thresh ~= 0);
                         nifti_out(:) = 0;
                         nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = my_coeff;
-                        if strcmp(model_results.cfg.model_spec, 'ttest') || strcmp(model_results.cfg.model_spec, 'munilr') || strcmp(model_results.cfg.model_spec, 'muniolsr')
+                        if strcmp(model_results.cfg.model_spec, 'ttest') || strcmp(model_results.cfg.model_spec, 'munilr') || strcmp(model_results.cfg.model_spec, 'muniolsr') || strcmp(model_results.cfg.model_spec, 'munimnr')
                             niftiwrite(nifti_out, ['tstat_fwe' fwe_thresh '_v' crit_vals{i}], nifti_hdr);   
                         elseif strcmp(model_results.cfg.model_spec, 'bmunz')
                             niftiwrite(nifti_out, ['bmstat_fwe' fwe_thresh '_v' crit_vals{i}], nifti_hdr);   

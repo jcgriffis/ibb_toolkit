@@ -2,7 +2,7 @@ function cfg = get_and_format_array_data(beh_table, id_col, beh_col, registry_fl
 
 % Load behavioral csv file
 if ~istable(beh_table)
-    beh_table = readtable(beh_table);
+    beh_table = readtable(beh_table, 'NumHeaderLines', 0, 'Delimiter', ',');
 end
 
 % Get study IDs
