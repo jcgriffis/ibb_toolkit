@@ -52,7 +52,12 @@ switch cfg.model_spec
     case 'munilr'
         mdl_text = 'Data were analyzed using mass-univariate logistic regression models.';
     case 'muniolsr'
-        mdl_text = 'Data were analyzed using mass-univariate linear regression models.';        
+        mdl_text = 'Data were analyzed using mass-univariate linear regression models.';      
+    case 'olsr'
+        mdl_text = 'Data were analyzed using ordinary linear regression models.';
+        if isfield(cfg, 'cpm_model')
+            mdl_text = [mdl_text, ' Connectome predictive modeling (CPM) was used to relate multivariate predictors to the outcome'];
+        end
     case 'bmunz'
         mdl_text = 'Data were analyzed using mass-univariate Brunner-Munzel tests.';
     case 'censemble'
@@ -61,6 +66,8 @@ switch cfg.model_spec
         mdl_text = 'Data were modeled using a regression ensemble';
     case 'prop_sub'
         mdl_text = 'Data were analyzed using mass-univariate proportional subtraction analyses.';
+    case 'munimnr'
+        mdl_text = 'Data were analyzed using ordinal regression models.';
 end
 
 % Analysis configuation
@@ -76,7 +83,7 @@ if cfg.dtlvc == 1
 end
 
 % Confounds
-if ~isempty(cfg.confounds) && ~contains(cfg.model_spec, {'munilr', 'muniolsr'})
+if ~isempty(cfg.confounds) && ~contains(cfg.model_spec, {'munilr', 'muniolsr', 'munimnr'})
     if ~isfield(cfg, 'confound_names')
         if cfg.cross_validation == 1
             mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regressors from the outcome variable. For cross-validation analyses, this was done in the training set(s) prior to training the model(s), and the resulting model(s) were applied to the outcome data from the test set(s) before obtaining predicted outcomes.'];
@@ -97,7 +104,7 @@ if ~isempty(cfg.confounds) && ~contains(cfg.model_spec, {'munilr', 'muniolsr'})
             mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regresors (' conf_text ') from the outcome variable prior to running the analyses.'];
         end           
     end
-elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr'})
+elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr', 'munimnr'})
     if ~isfield(cfg, 'confound_names')
         mdl_text = [mdl_text, ' covariates were included in the model to account for variance associated with user-defined nuisance regressors.'];
     else

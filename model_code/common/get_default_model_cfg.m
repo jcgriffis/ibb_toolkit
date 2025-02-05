@@ -55,7 +55,7 @@ switch cfg.model_spec
         end
         cfg.hp_opt.bayes_opt = 0;     
         addpath(fullfile(cfg.model_dir, 'reglm'));  
-        if ~contains(cfg.model_spec, 'svc')
+        if ~contains(cfg.model_spec, {'svc', 'logistic'})
             cfg.standardize = 3;
         else
             cfg.standardize = 1;
@@ -130,35 +130,48 @@ switch cfg.model_spec
         cfg.hp_opt.bayes_opt = 1; % Do Bayesian hyper-parameter optimization
         cfg.hp_opt.opt_iter = 60; % Number of objective function evaluations
         cfg.hp_opt.repartition = true; % Repartition into train/test at each iteration
+        cfg.standardize = 0;
         addpath(fullfile(cfg.model_dir, 'ensemble'));         
     case 'olsr' % Ordinary least squares regression - incomplete and implemented for limited use case (continuous outcome)
         cfg.cat_Y = 0;
         cfg.hp_opt = [];
+        cfg.standardize = 0;        
         addpath(fullfile(cfg.model_dir, 'mass_univariate'));
     case 'municorr' % Mass univariate correlation - bivariate Pearson correlations (also generates t-statistics)
         cfg.cat_Y = 0;
         cfg.hp_opt = [];        
+        cfg.standardize = 0;        
         addpath(fullfile(cfg.model_dir, 'mass_univariate'));      
-    case 'munilr' % Mass univariate logistic regression - not currently functional 
+    case 'munilr' % Mass univariate logistic regression
         cfg.cat_Y = 1;
         cfg.hp_opt = [];        
-        addpath(fullfile(cfg.model_dir, 'mass_univariate'));      
+        cfg.standardize = 0;        
+        addpath(fullfile(cfg.model_dir, 'mass_univariate'));    
+    case 'munimnr' % Mass univariate ordinal regression 
+        cfg.cat_Y = 0;
+        cfg.hp_opt = [];
+        cfg.standardize = 0;
+        addpath(fullfile(cfg.model_dir, 'mass_univariate'));            
     case 'muniolsr'
         cfg.cat_Y = 0;
         cfg.hp_opt = [];
+        cfg.standardize = 0;        
         addpath(fullfile(cfg.model_dir, 'mass_univariate'));
     case 'bmunz' % Brunner-Munzel test - limited functionality (only for fit_explanatory_model, no bootstrap functionality)
         cfg.cat_Y = 0;
         cfg.hp_opt = [];        
+        cfg.standardize = 0;        
         addpath(fullfile(cfg.model_dir, 'mass_univariate'));
     case 'ttest' % Mass univariate t-tests - limited functionality (only for fit_explanatory_model, no bootstrap functionality)
         cfg.cat_Y = 0;
         cfg.hp_opt = [];        
+        cfg.standardize = 0;        
         cfg.vartype = 'unequal'; % unequal variances t-test
         addpath(fullfile(cfg.model_dir, 'mass_univariate'))
     case 'prop_sub' % Proportional subtraction analysis
         cfg.cat_Y = 1;
         cfg.hp_opt = [];
+        cfg.standardize = 0;        
         addpath(fullfile(cfg.model_dir, 'mass_univariate'));
     otherwise
         warning('Model type not provided as input - make sure to set model-specific CFG fields since they will not be set by default!' );
@@ -208,9 +221,6 @@ if ~isfield(cfg, 'strat_var')
 end
 if ~isfield(cfg, 'confounds')
     cfg.confounds = []; % confound variables (will be regressed out of outcome)
-end
-if ~isfield(cfg, 'standardize') 
-    cfg.standardize = 0;
 end
 
 %%%% Modeling options

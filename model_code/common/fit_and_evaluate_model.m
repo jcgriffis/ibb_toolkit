@@ -91,7 +91,7 @@ rng_seed = {0, 'twister'};
 
 % Run cross-validation if indicated
 if cfg.cross_validation == 1
-    if ~contains(cfg.model_spec, {'municorr', 'munilr', 'muniolsr', 'bmunz', 'ttest', 'prop_sub'})
+    if ~contains(cfg.model_spec, {'municorr', 'munilr', 'muniolsr', 'bmunz', 'ttest', 'prop_sub', 'munimnr'})
             run_nested_cv(X, Y, cfg, 0);
         if cfg.cv.permutation == 1
             perm_nested_cv(X, Y, cfg);

@@ -12,10 +12,10 @@ switch cfg.model_spec
     case {'plsr', 'ridge', 'lasso', 'rlinsvr', 'linsvr', 'kernsvr', 'rensemble'}
         if cfg.fit_explanatory_model == 1
             if cfg.bootstrap == 0
-                result_text = ['The inferential model fit to the full dataset explained ' num2str(100*model_results.r2) '% of the variance in the outcome. Note that inferential model fit statistics should generally not be interpreted at face value, as they may reflect overfitting by the multivariate model, and are reported here only for descriptive purposes.'];    
+                result_text = ['The inferential model fit to the full dataset explained ' num2str(100*model_results.r2) '% of the variance in the outcome.'];    
             elseif cfg.bootstrap == 1 && cfg.boot.get_cis == 1
                 result_text = ['The inferential model fit to the full dataset explained ' num2str(100*model_results.r2) '% of the variance in the outcome ',...
-                    '(' num2str(100*(1-cfg.boot.ci_alpha_thresh_model)) '% CI: [' num2str(model_results.boot.r2_ci(1)) ', ' num2str(model_results.boot.r2_ci(2)) ']). Note that inferential model fit statistics should generally not be interpreted at face value, as they may reflect overfitting by the multivariate model, and are reported here only for descriptive purposes.'];   
+                    '(' num2str(100*(1-cfg.boot.ci_alpha_thresh_model)) '% CI: [' num2str(model_results.boot.r2_ci(1)) ', ' num2str(model_results.boot.r2_ci(2)) ']).'];   
             end
             if cfg.permutation == 1
                 if model_results.perm.model_pval <= 0.05
@@ -47,7 +47,7 @@ switch cfg.model_spec
             if cfg.bootstrap == 0
                 result_text = ['The inferential model fit to the full dataset achieved ' num2str(100*model_results.classrate(1)) '% classification accuracy for the group labeled -1, ',...
                     num2str(100*model_results.classrate(2)) '% accuracy for the group labeled 1, and ' num2str(100*model_results.classrate(3)) '% accuracy for the combined groups.',...
-                    'The area under the ROC curve for the inferential model fit to the full dataset was ' num2str(model_results.roc_auc) '. Note that inferential model fit statistics should generally not be interpreted at face value, as they may reflect overfitting by the multivariate model, and are reported here only for descriptive purposes.'];    
+                    'The area under the ROC curve for the inferential model fit to the full dataset was ' num2str(model_results.roc_auc) '.'];    
             elseif cfg.bootstrap == 1 && cfg.boot.get_cis == 1
                 result_text = ['The inferential model fit to the full dataset achieved ' num2str(100*model_results.classrate(1)) '% classification accuracy for the group labeled -1 ',...
                     '(' num2str(100*(1-cfg.boot.ci_alpha_thresh_model)) '% CI: [' num2str(model_results.boot.classrate_ci(1,1)) ', ' num2str(model_results.boot.classrate_ci(2,1)) ']), ',...
@@ -55,7 +55,7 @@ switch cfg.model_spec
                     '(' num2str(100*(1-cfg.boot.ci_alpha_thresh_model)) '% CI: [' num2str(model_results.boot.classrate_ci(1,2)) ', ' num2str(model_results.boot.classrate_ci(2,2)) ']), ',...
                     'and ' num2str(100*model_results.classrate(3)) '% accuracy for the combined groups ',...
                     '(' num2str(100*(1-cfg.boot.ci_alpha_thresh_model)) '% CI: [' num2str(model_results.boot.classrate_ci(1,3)) ', ' num2str(model_results.boot.classrate_ci(2,3)) ']). ',...
-                    'The area under the ROC curve for the inferential model fit to the full dataset was ' num2str(model_results.roc_auc) ' (' num2str(100*(1-cfg.boot.ci_alpha_thresh_model)) '% CI: [' num2str(model_results.boot.roc_auc_ci(1)) ', ' num2str(model_results.boot.roc_auc_ci(2)) ']). Note that inferential model fit statistics should generally not be interpreted at face value, as they may reflect overfitting by the multivariate model, and are reported here only for descriptive purposes.'];                 
+                    'The area under the ROC curve for the inferential model fit to the full dataset was ' num2str(model_results.roc_auc) ' (' num2str(100*(1-cfg.boot.ci_alpha_thresh_model)) '% CI: [' num2str(model_results.boot.roc_auc_ci(1)) ', ' num2str(model_results.boot.roc_auc_ci(2)) ']).'];                 
             end                 
             if cfg.permutation == 1
                 if model_results.perm.model_pval <= 0.05
@@ -82,7 +82,7 @@ switch cfg.model_spec
                 result_text = [result_text, ' Permutation testing on the full cross-validation procedure indicated that the average cross-validation area under the ROC curve was not greater than expected given the permutation null distribution (p=' num2str(cv_results.perm_pval) ').'];
             end
         end 
-    case {'municorr', 'bmunz', 'olsr', 'munilr', 'ttest', 'muniolsr'}
+    case {'municorr', 'bmunz', 'olsr', 'munilr', 'ttest', 'muniolsr', 'munimnr'}
         if isfield(model_results, 'perm')
             if isfield(model_results.perm, 'cfwe')
                 crit_val = string(fieldnames(model_results.perm.cfwe));
