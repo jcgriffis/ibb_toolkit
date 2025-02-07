@@ -18,7 +18,7 @@ nifti_hdr.raw.dime.bitpix = 32;
 nifti_out = single(nifti_out);
 
 % Mass univariate correlations
-if contains(model_results.cfg.model_spec, {'municorr', 'bmunz', 'olsr', 'munilr', 'ttest', 'muniolsr', 'munimnr'})
+if contains(model_results.cfg.model_spec, {'municorr', 'bmunz', 'olsr', 'munilr', 'ttest', 'muniolsr', 'prop_sub', 'munimnr'})
     write_mass_uni_weight_maps(nifti_out, nifti_hdr, model_results);
 else
     write_mlsm_weight_maps(nifti_out, nifti_hdr, model_results);
