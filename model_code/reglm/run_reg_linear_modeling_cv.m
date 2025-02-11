@@ -119,6 +119,7 @@ else
         'Lambda', cfg.lambda,...
         'BetaTolerance', 0);    
     end
+    opt_l = mdl.Lambda;
 end
 
 % Predict test cases
