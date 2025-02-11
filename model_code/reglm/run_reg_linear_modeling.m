@@ -108,6 +108,7 @@ else
         'BetaTolerance', 0,...
         'Lambda', cfg.lambda);
     end
+    opt_l = mdl_final.Lambda;
 end
 
 % Get final model R-squared
