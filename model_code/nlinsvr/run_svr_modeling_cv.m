@@ -95,7 +95,7 @@ if perm_flag == 0
         cv_results.coeff(:,i,j) = mdl.Beta;
     end
     cv_results.explained(i,j) = get_explained_variance(y_test, y_pred); % explained variance
-    cv_results.r2_ss(i,j) = get_model_r2(y_test, y_pred); % sum-of-squares R-squared
+    cv_results.r2_ss(i,j) = get_model_r2_train(y_test, y_pred, y_train); % sum-of-squares R-squared
     cv_results.corr(i,j) = corr(y_test, y_pred); % Correlation of predicted and observed    
     cv_results.opt_c(i,j) = opt_c;
     cv_results.opt_g(i,j) = opt_g;
