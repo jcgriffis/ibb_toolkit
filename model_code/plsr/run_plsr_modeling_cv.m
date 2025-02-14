@@ -38,7 +38,7 @@ cv_results.mse(i,j) = get_mse(y_test, y_pred); % MSE
 if perm_flag == 0
     cv_results.explained(i,j) = get_explained_variance(y_test, y_pred); % explained variance
     cv_results.mse(i,j) = get_mse(y_test, y_pred); % MSE
-    cv_results.r2_ss(i,j) = get_model_r2(y_test, y_pred); % sum-of-squares R-squared
+    cv_results.r2_ss(i,j) = get_model_r2_train(y_test, y_pred, y_train); % sum-of-squares R-squared
     cv_results.corr(i,j) = corr(y_test, y_pred); % Correlation of predicted and observed
     cv_results.coeff(:,i,j) = betas(2:end); % betas from training set
     cv_results.beta_0(i,j) = betas(1); % Intercept from training set
