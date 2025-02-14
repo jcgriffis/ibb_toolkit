@@ -140,7 +140,7 @@ cv_results.mse(i,j) = get_mse(y_test, y_pred); % MSE
 if perm_flag == 0
     cv_results.coeff(:,i,j) = mdl.Beta; % beta coefficients    
     cv_results.explained(i,j) = get_explained_variance(y_test, y_pred); % explained variance
-    cv_results.r2_ss(i,j) = get_model_r2(y_test, y_pred); % sum-of-squares R-squared
+    cv_results.r2_ss(i,j) = get_model_r2_train(y_test, y_pred, y_train); % sum-of-squares R-squared
     cv_results.corr(i,j) = corr(y_test, y_pred); % Correlation of predicted and observed    
     cv_results.beta_0(i,j) = mdl.Bias; % intercept
     cv_results.lambda(i,j) = opt_l; % optimal lambda from training set
