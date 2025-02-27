@@ -71,10 +71,10 @@ for i = 1:cfg.cv.repeats % Loop over CV repeats
                 cv_results = run_svc_modeling_cv(x_train, y_train, x_test, y_test, i, j, cfg, cv_results, perm_flag);
                 clear y_test x_test y_test x_train y_train train_set test_set      
             case 'censemble'
-                cv_results = run_censemble_modeling(x_train, y_train, x_test, y_test, i, j, cfg, cv_results, perm_flag);
+                cv_results = run_censemble_modeling_cv(x_train, y_train, x_test, y_test, i, j, cfg, cv_results, perm_flag);
                 clear y_test x_test y_test x_train y_train train_set test_set                      
             case 'rensemble'
-                cv_results = run_rensemble_modeling(x_train, y_train, x_test, y_test, i, j, cfg, cv_results, perm_flag);   
+                cv_results = run_rensemble_modeling_cv(x_train, y_train, x_test, y_test, i, j, cfg, cv_results, perm_flag);   
                 clear y_test x_test y_test x_train y_train train_set test_set                      
             case 'olsr'
                 cv_results = run_ols_modeling_cv(x_train, y_train, x_test, y_test, i, j, cfg, cv_results, perm_flag);
