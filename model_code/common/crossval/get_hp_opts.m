@@ -10,7 +10,7 @@ if cfg.hp_opt.bayes_opt == 0
             if ~isempty(cfg.strat_var)
                 disp(['Running ' num2str(cfg.hp_opt.repeats) ' repeats of ' num2str(cfg.hp_opt.holdout .* 100) '% hold-out optimization for model hyperparameters']);                
                 if isfield(cfg, 'train_set')
-                    c = cvpartition(cfg.strat_groups(cfg.train_set), 'Holdout', cfg.hp_opt.holdout);
+                    c = cvpartition(cfg.strat_groups(cfg.train_set==1), 'Holdout', cfg.hp_opt.holdout);
                 else
                     c = cvpartition(cfg.strat_groups, 'Holdout', cfg.hp_opt.holdout);
                 end
@@ -22,7 +22,7 @@ if cfg.hp_opt.bayes_opt == 0
             if ~isempty(cfg.strat_var) 
                 disp(['Running ' num2str(cfg.hp_opt.repeats) ' repeats of '  num2str(cfg.hp_opt.folds) '-fold optimization for model hyperparameters']);
                 if isfield(cfg, 'train_set')
-                    c = cvpartition(cfg.strat_groups(cfg.train_set), 'KFold', cfg.hp_opt.folds);
+                    c = cvpartition(cfg.strat_groups(cfg.train_set==1), 'KFold', cfg.hp_opt.folds);
                 else
                     c = cvpartition(cfg.strat_groups, 'KFold', cfg.hp_opt.folds);
                 end
