@@ -40,7 +40,7 @@ if ~isempty(cfg.strat_var)
 
     % Stratify if indicated and partition data
     if isfield(cfg, 'train_set') && ~isempty(cfg.train_set) % if this is nested CV
-        c = cvpartition(cfg.strat_groups(cfg.train_set), 'KFold', cfg.hp_opt.folds, 'Stratify', true);
+        c = cvpartition(cfg.strat_groups(cfg.train_set==1), 'KFold', cfg.hp_opt.folds, 'Stratify', true);
     else
         c = cvpartition(cfg.strat_groups, 'KFold', cfg.hp_opt.folds, 'Stratify', true);
     end
