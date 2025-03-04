@@ -46,6 +46,7 @@ y_pred = predict(mdl, x_test, 'ObservationsIn', 'rows');
 if isfield(cfg, 'Cy')
     y_pred = (y_pred .* cfg.Sy) + cfg.Cy;
     y_test = (y_test .* cfg.Sy) + cfg.Cy;
+    y_train = (y_train .* cfg.Sy) + cfg.Cy;
 end
 
 % Store predictions and observations
