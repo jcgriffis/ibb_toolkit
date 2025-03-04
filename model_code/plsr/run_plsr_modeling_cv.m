@@ -28,6 +28,7 @@ y_pred = [ones(length(y_test), 1) x_test]*betas; % get fitted Y
 if isfield(cfg, 'Cy')
     y_pred = (y_pred .* cfg.Sy) + cfg.Cy;
     y_test = (y_test .* cfg.Sy) + cfg.Cy;
+    y_train = (y_train .* cfg.Sy) + cfg.Cy;    
 end
 
 % Save relevant results in cv_results structure
