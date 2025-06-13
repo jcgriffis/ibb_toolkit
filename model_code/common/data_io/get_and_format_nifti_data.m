@@ -57,7 +57,6 @@ end
 
 % Loop over subjects
 cfg.X = zeros(length(sub_ids), length(cfg.mask_inds)); % preallocate matrix
-cfg.lvol = zeros(length(sub_ids), 1); % preallocate array
 
 for i = 1:length(sub_ids)
     
