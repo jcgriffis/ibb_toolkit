@@ -3,6 +3,8 @@ classdef run_modeling_gui < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
+        RankCorCheckBox                 matlab.ui.control.CheckBox
+        RegressLesionVolumefromXandYCheckBox  matlab.ui.control.CheckBox
         CatYCheckBox                    matlab.ui.control.CheckBox
         NuisanceRegressorCheckBox       matlab.ui.control.CheckBox
         RegressLesionVolumefromYCheckBox  matlab.ui.control.CheckBox
@@ -332,9 +334,16 @@ classdef run_modeling_gui < matlab.apps.AppBase
                     disp('Removed subjects will have values of 1 in model_results.cfg.missing_inds');
                 end
             end
-                
-            if app.LesionButton.Value == 1 && app.RegressLesionVolumefromYCheckBox.Value == 1
-                cfg.confounds = [cfg.confounds, zscore(cfg.lvol)];
+             
+            % Set up lesion volume confound if indicated
+            if app.LesionButton.Value == 1 
+                if app.RegressLesionVolumefromYCheckBox.Value == 1 || app.RegressLesionVolumefromXandYCheckBox.Value == 1
+                    disp('Lesion volume')
+                    cfg.confounds = [cfg.confounds, zscore(cfg.lvol)];
+                    if app.RegressLesionVolumefromXandYCheckBox.Value == 1
+                        cfg.confound_opt = 'regress_both';
+                    end
+                end
             else
                 cfg.confounds = cfg.confounds;
             end
@@ -523,6 +532,8 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.PermIter.Value = 0;
                 app.PermApplycFWECheckBox.Enable = 'off';
                 app.PermApplycFWECheckBox.Value = 0;
+                app.WritePermutationImagesCheckBox.Enable = 'off';
+                app.WritePermutationImagesCheckBox.Value = 0;                
                 if app.BootCheckBox.Value == 0                
                     app.FweThresh.Value = 0.05;
                     app.FweThresh.Enable = 'off';
@@ -548,7 +559,9 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.FDRThresh.Value = 0.05;
                 app.FDRThresh.Enable = 'on';
                 app.UncPThresh.Value = 0.001;
-                app.UncPThresh.Enable = 'on';                
+                app.UncPThresh.Enable = 'on';
+                app.WritePermutationImagesCheckBox.Enable = 'on';
+                app.WritePermutationImagesCheckBox.Value = 1;
             end
         end
 
@@ -562,7 +575,11 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.BootCIsCheckBox.Value = 0;
                 app.ConfIntWidth.Value = 0;
                 app.ConfIntWidth.Enable = 'off';
-                if app.PermCheckBox.Value == 0                
+                app.WriteBootstrapImagesCheckBox.Value = 0;
+                app.WriteBootstrapImagesCheckBox.Enable = 0;                
+                if app.PermCheckBox.Value == 0   
+                    app.WritePermutationImagesCheckBox.Value = 0;
+                    app.WritePermutationImagesCheckBox.Enable = 0;
                     app.FweThresh.Value = 0.05;
                     app.FweThresh.Enable = 'off';
                     app.FDRThresh.Value = 0.05;
@@ -570,6 +587,8 @@ classdef run_modeling_gui < matlab.apps.AppBase
                     app.UncPThresh.Value = 0.001;
                     app.UncPThresh.Enable = 'off';       
                 else
+                    app.WritePermutationImagesCheckBox.Value = 1;
+                    app.WritePermutationImagesCheckBox.Enable = 1;                    
                     app.FweThresh.Value = 0.05;
                     app.FweThresh.Enable = 'on';
                     app.FDRThresh.Value = 0.05;
@@ -578,6 +597,8 @@ classdef run_modeling_gui < matlab.apps.AppBase
                     app.UncPThresh.Enable = 'on';
                 end
             else
+                app.WriteBootstrapImagesCheckBox.Value = 1;
+                app.WriteBootstrapImagesCheckBox.Enable = 1;                
                 app.BootIter.Enable = 'on';
                 app.BootIter.Value = 1000;
                 app.BootCIsCheckBox.Enable = 'on';
@@ -595,18 +616,22 @@ classdef run_modeling_gui < matlab.apps.AppBase
 
         % Selection changed function: PredictorTypeButtonGroup
         function PredictorTypeButtonGroupSelectionChanged(app, event)
-            if app.LesionButton.Value == 1 && ~contains(app.SelectModelDropDown.Value, ["ttest", "bmunz", "municorr", "munilr"])
-                app.ApplyDTLVCCheckBox.Enable = "on";
-                app.ApplyDTLVCCheckBox.Value = 1;
-                app.RegressLesionVolumefromYCheckBox.Enable = "on";
-                app.RegressLesionVolumefromYCheckBox.Value = 0;
-                app.MinFreq.Value = 4;
-                app.MinObs.Value = 1;                
-            elseif app.LesionButton.Value == 1 && contains(app.SelectModelDropDown.Value, ["ttest", "bmunz", "municorr", "munilr"])
+            if app.LesionButton.Value == 1 && ~contains(app.SelectModelDropDown.Value, ["ttest", "bmunz", "municorr", "munilr", "munimnr", "muniolsr", "prop_sub"])
                 app.ApplyDTLVCCheckBox.Enable = "on";
                 app.ApplyDTLVCCheckBox.Value = 0;
                 app.RegressLesionVolumefromYCheckBox.Enable = "on";
-                app.RegressLesionVolumefromYCheckBox.Value = 1;
+                app.RegressLesionVolumefromYCheckBox.Value = 0;
+                app.RegressLesionVolumefromXandYCheckBox.Enable = "on";
+                app.RegressLesionVolumefromXandYCheckBox.Value = 0;
+                app.MinFreq.Value = 4;
+                app.MinObs.Value = 1;                
+            elseif app.LesionButton.Value == 1 && contains(app.SelectModelDropDown.Value, ["ttest", "bmunz", "municorr", "munilr", "munimnr", "muniolsr"])
+                app.ApplyDTLVCCheckBox.Enable = "on";
+                app.ApplyDTLVCCheckBox.Value = 0;
+                app.RegressLesionVolumefromYCheckBox.Enable = "on";
+                app.RegressLesionVolumefromYCheckBox.Value = 1;    
+                app.RegressLesionVolumefromXandYCheckBox.Enable = "off";
+                app.RegressLesionVolumefromXandYCheckBox.Value = 0;                
                 app.MinFreq.Value = 4;
                 app.MinObs.Value = 1;                     
             else
@@ -614,6 +639,8 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.ApplyDTLVCCheckBox.Enable = 'off';
                 app.RegressLesionVolumefromYCheckBox.Enable = "off";
                 app.RegressLesionVolumefromYCheckBox.Value = 0;
+                app.RegressLesionVolumefromXandYCheckBox.Enable = "on";
+                app.RegressLesionVolumefromXandYCheckBox.Value = 0;                
                 app.MinFreq.Value = 1;
                 app.MinObs.Value = 0;
             end
@@ -657,13 +684,52 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.MisClasCostG1.Enable = 1;
                 app.MisClasCostG2.Enable = 1;
             end
-            if contains(value, ["logistic", "pls_da", "svc", "censemble", "munilr"])
-                app.RegressLesionVolumefromYCheckBox.Text = 'Regress Lesion Volume from X';
+            if app.LesionButton.Value == 1
+                if contains(value, ["logistic", "pls_da", "svc", "censemble"])
+                    app.RegressLesionVolumefromYCheckBox.Text = 'Regress Lesion Volume from X';
+                    app.RegressLesionVolumefromXandYCheckBox.Visible = 0;
+                    app.RegressLesionVolumefromXandYCheckBox.Value = 0;
+                    app.RegressLesionVolumefromXandYCheckBox.Enable = 0;
+                elseif contains(value, ["muniolsr", "munilr", "munimnr", "municorr"])
+                    app.RegressLesionVolumefromYCheckBox.Text = 'Include Lesion Volume as Covariate';
+                    app.RegressLesionVolumefromXandYCheckBox.Visible = 0;
+                    app.RegressLesionVolumefromXandYCheckBox.Value = 0;
+                    app.RegressLesionVolumefromXandYCheckBox.Enable = 0;                    
+                else
+                    app.RegressLesionVolumefromYCheckBox.Text = 'Regress Lesion Volume from Y';
+                    app.RegressLesionVolumefromXandYCheckBox.Visible = 1;
+                    app.RegressLesionVolumefromXandYCheckBox.Value = 0;               
+                    app.RegressLesionVolumefromXandYCheckBox.Enable = 1;  
+                    if ~contains(value, ["ttest", "bmunz", "prop_sub"])
+                        app.RegressLesionVolumefromXandYCheckBox.Text = 'Regress Lesion Volume from X & Y';
+                        app.RegressLesionVolumefromXandYCheckBox.Value = 0;
+                        app.RegressLesionVolumefromXandYCheckBox.Enable = 1;
+                    else
+                        app.RegressLesionVolumefromXandYCheckBox.Visible = 0;
+                        app.RegressLesionVolumefromXandYCheckBox.Value = 0;
+                        app.RegressLesionVolumefromXandYCheckBox.Enable = 0;
+                    end
+                end
             else
-                app.RegressLesionVolumefromYCheckBox.Text = 'Regress Lesion Volume from Y';
+                app.RegressLesionVolumefromXandYCheckBox.Visible = 0;
+                app.RegressLesionVolumefromXandYCheckBox.Value = 0;
+                app.RegressLesionVolumefromXandYCheckBox.Enable = 0;                
+                app.RegressLesionVolumefromYCheckBox.Value = 0;
+                app.RegressLesionVolumefromYCheckBox.Enable = 0;
+                app.RegressLesionVolumefromYCheckBox.Visible = 0;                
             end
             if contains(value, ["municorr", "ttest", "bmunz", "munilr", "muniolsr", "munimnr", ...
                     'prop_sub'])
+                % Correlation options
+                if strcmp(value, 'municorr')
+                    app.RankCorCheckBox.Visible = 1;
+                    app.RankCorCheckBox.Enable = 1;
+                    app.RankCorCheckBox.Value = 0;
+                else
+                    app.RankCorCheckBox.Visible = 0;
+                    app.RankCorCheckBox.Enable = 0;
+                    app.RankCorCheckBox.Value = 0;
+                end
                 % Bootstrap options
                 app.BootCheckBox.Enable = 0;
                 app.BootCIsCheckBox.Enable = 0;
@@ -710,7 +776,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
                     app.ApplyDTLVCCheckBox.Value = 0;
                     app.MinFreq.Value = 10;
                     app.RegressLesionVolumefromYCheckBox.Enable = 1;
-                    app.RegressLesionVolumefromYCheckBox.Value = 1;
+                    app.RegressLesionVolumefromYCheckBox.Value = 0;
                     app.SelectNuisanceRegressorsListBox.Enable = 1;
                     app.NuisanceRegressorCheckBox.Enable = 1;                    
                 else
@@ -829,7 +895,9 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.RegressLesionVolumefromYCheckBox.Enable = 1;
                 app.SelectNuisanceRegressorsListBox.Enable = 1;
                 app.NuisanceRegressorCheckBox.Enable = 1;                    
-                
+                app.RankCorCheckBox.Visible = 0;
+                app.RankCorCheckBox.Enable = 0;
+                app.RankCorCheckBox.Value = 0;                
             end
         end
 
@@ -942,6 +1010,42 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.RegressLesionVolumefromYCheckBox.Text = 'Regress lesion volume from Y';
             end
         end
+
+        % Value changed function: RegressLesionVolumefromYCheckBox
+        function RegressLesionVolumefromYCheckBoxValueChanged(app, event)
+            value = app.RegressLesionVolumefromYCheckBox.Value;
+            if value == 1
+                app.ApplyDTLVCCheckBox.Value = 0;
+                app.ApplyDTLVCCheckBox.Enable = 0;
+            else
+                app.ApplyDTLVCCheckBox.Enable = 1;
+            end
+        end
+
+        % Value changed function: RegressLesionVolumefromXandYCheckBox
+        function RegressLesionVolumefromXandYCheckBoxValueChanged(app, event)
+            value = app.RegressLesionVolumefromXandYCheckBox.Value;
+            if value == 1
+                app.ApplyDTLVCCheckBox.Value = 0;
+                app.ApplyDTLVCCheckBox.Enable = 0;
+            else
+                app.ApplyDTLVCCheckBox.Enable = 1;
+            end           
+        end
+
+        % Value changed function: ApplyDTLVCCheckBox
+        function ApplyDTLVCCheckBoxValueChanged(app, event)
+            value = app.ApplyDTLVCCheckBox.Value;
+            if value == 1
+                app.RegressLesionVolumefromYCheckBox.Value = 0;
+                app.RegressLesionVolumefromYCheckBox.Enable = 0;
+                app.RegressLesionVolumefromXandYCheckBox.Value = 0;
+                app.RegressLesionVolumefromXandYCheckBox.Enable = 0;
+            else
+                app.RegressLesionVolumefromYCheckBox.Enable = 1;
+                app.RegressLesionVolumefromXandYCheckBox.Enable = 1;                
+            end
+        end
     end
 
     % Component initialization
@@ -975,9 +1079,9 @@ classdef run_modeling_gui < matlab.apps.AppBase
 
             % Create ApplyDTLVCCheckBox
             app.ApplyDTLVCCheckBox = uicheckbox(app.GeneralModelingOptionsPanel);
+            app.ApplyDTLVCCheckBox.ValueChangedFcn = createCallbackFcn(app, @ApplyDTLVCCheckBoxValueChanged, true);
             app.ApplyDTLVCCheckBox.Text = 'Apply DTLVC';
             app.ApplyDTLVCCheckBox.Position = [219 152 94 22];
-            app.ApplyDTLVCCheckBox.Value = true;
 
             % Create PermApplycFWECheckBox
             app.PermApplycFWECheckBox = uicheckbox(app.GeneralModelingOptionsPanel);
@@ -1495,8 +1599,9 @@ classdef run_modeling_gui < matlab.apps.AppBase
 
             % Create RegressLesionVolumefromYCheckBox
             app.RegressLesionVolumefromYCheckBox = uicheckbox(app.UIFigure);
+            app.RegressLesionVolumefromYCheckBox.ValueChangedFcn = createCallbackFcn(app, @RegressLesionVolumefromYCheckBoxValueChanged, true);
             app.RegressLesionVolumefromYCheckBox.Text = 'Regress Lesion Volume from Y';
-            app.RegressLesionVolumefromYCheckBox.Position = [221 489 187 22];
+            app.RegressLesionVolumefromYCheckBox.Position = [221 489 243 22];
 
             % Create NuisanceRegressorCheckBox
             app.NuisanceRegressorCheckBox = uicheckbox(app.UIFigure);
@@ -1511,6 +1616,19 @@ classdef run_modeling_gui < matlab.apps.AppBase
             app.CatYCheckBox.Visible = 'off';
             app.CatYCheckBox.Text = 'Y is Grouping Variable';
             app.CatYCheckBox.Position = [217 421 141 22];
+
+            % Create RegressLesionVolumefromXandYCheckBox
+            app.RegressLesionVolumefromXandYCheckBox = uicheckbox(app.UIFigure);
+            app.RegressLesionVolumefromXandYCheckBox.ValueChangedFcn = createCallbackFcn(app, @RegressLesionVolumefromXandYCheckBoxValueChanged, true);
+            app.RegressLesionVolumefromXandYCheckBox.Text = 'Regress Lesion Volume from X and Y';
+            app.RegressLesionVolumefromXandYCheckBox.Position = [466 490 301 22];
+
+            % Create RankCorCheckBox
+            app.RankCorCheckBox = uicheckbox(app.UIFigure);
+            app.RankCorCheckBox.Enable = 'off';
+            app.RankCorCheckBox.Visible = 'off';
+            app.RankCorCheckBox.Text = 'Spearman Rank Correlation';
+            app.RankCorCheckBox.Position = [217 421 228 22];
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
