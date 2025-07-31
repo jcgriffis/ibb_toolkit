@@ -90,7 +90,7 @@ switch cfg.model_spec
                     model_results.tstat = model_results.coeff;
                 end
                 for i = 1:length(crit_val)
-                    n_survive = numel(find(model_results.tstat >= model_results.perm.cfwe.(crit_val(i))));
+                    n_survive = numel(find(abs(model_results.tstat) > model_results.perm.cfwe.(crit_val(i))));
                     v_thresh = strsplit(crit_val(i), '_');
                     result_text = [result_text, 'For the continuous FWE analyses, the number of surviving voxels at each voxel count threshold (v) was evaluated. At a critical voxel threshold of v=' num2str(v_thresh{end}) ', ' num2str(n_survive) ' voxels survived thresholding. '];
                 end

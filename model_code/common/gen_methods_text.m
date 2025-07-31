@@ -19,6 +19,14 @@ if ~isfield(cfg.hp_opt, 'bayes_opt')
     cfg.hp_opt.bayes_opt = 0;
 end
 
+if ~isfield(cfg, 'confound_opt')
+    cfg.confound_opt = [];
+end
+
+if ~isfield(cfg, 'cor_type')
+    cfg.cor_type = 'Pearson';
+end
+
 % Modeling method
 switch cfg.model_spec
     case 'plsr'
@@ -46,7 +54,11 @@ switch cfg.model_spec
     case 'kernsvc'
         mdl_text = 'Data were modeled using a support vector classification (SVC) model with a radial basis function (RBF) kernel.';
     case 'municorr'
-        mdl_text = 'Data were analyzed using mass-univariate Pearson correlation analyses.';
+        if isempty(cfg.confounds)
+           mdl_text = ['Data were analyzed using mass-univariate ' cfg.cor_type ' correlation analyses.'];
+        else
+           mdl_text = ['Data were analyzed using mass-univariate partial ' cfg.cor_type ' correlation analyses.'];
+        end            
     case 'ttest'
         mdl_text = 'Data were analyzed using mass-univariate independent samples t-tests.';
     case 'munilr'
@@ -83,12 +95,17 @@ if cfg.dtlvc == 1
 end
 
 % Confounds
-if ~isempty(cfg.confounds) && ~contains(cfg.model_spec, {'munilr', 'muniolsr', 'munimnr'})
+if ~isempty(cfg.confounds) && ~contains(cfg.model_spec, {'munilr', 'muniolsr', 'munimnr', 'municorr'})
     if ~isfield(cfg, 'confound_names')
         if cfg.cross_validation == 1
             mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regressors from the outcome variable. For cross-validation analyses, this was done in the training set(s) prior to training the model(s), and the resulting model(s) were applied to the outcome data from the test set(s) before obtaining predicted outcomes.'];
         else
             mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regressors from the outcome variable prior to running the analyses.'];
+            if ~isempty(cfg.confound_opt)
+                if strcmp(cfg.confound_opt, 'regress_both')
+                    mdl_text = [mdl_text, 'Confound regression was also performed to remove variance with user-defined nuisance regressors from the predictor matrix.'];
+                end
+            end
         end
     else
         for i = 1:length(cfg.confound_names)
@@ -104,9 +121,9 @@ if ~isempty(cfg.confounds) && ~contains(cfg.model_spec, {'munilr', 'muniolsr', '
             mdl_text = [mdl_text, ' Confound regression was performed to remove variance associated with user-defined nuisance regresors (' conf_text ') from the outcome variable prior to running the analyses.'];
         end           
     end
-elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr', 'munimnr'})
+elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr', 'munimnr', 'municorr'})
     if ~isfield(cfg, 'confound_names')
-        mdl_text = [mdl_text, ' covariates were included in the model to account for variance associated with user-defined nuisance regressors.'];
+        mdl_text = [mdl_text, ' Covariates were included in the model to account for variance associated with user-defined nuisance regressors.'];
     else
         for i = 1:length(cfg.confound_names)
             if i == 1
@@ -115,7 +132,7 @@ elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr'
                 conf_text = [conf_text ', ' cfg.confound_names{i}];
             end
         end
-        mdl_text = [mdl_text, ' Confound regression was performed to account for variance associated with user-defined nuisance regresors (' conf_text ').'];
+        mdl_text = [mdl_text, ' Covariates were included in the model to account for variance associated with user-defined nuisance regressors (' conf_text ').'];
     end
 end
 

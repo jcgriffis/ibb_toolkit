@@ -103,7 +103,26 @@ end
 
 % Fit explanatory model to full sample (with bootstrapping/permutation testing if indicated)
 if cfg.fit_explanatory_model == 1
-    model_results = fit_explanatory_model(X,Y,model_results,cfg);
+    if ~isempty(cfg.confounds)
+        if isfield(cfg, 'confound_opt')
+            if strcmp(cfg.confound_opt, 'regress_both')
+                [model_results, X_resid, Y_resid] = fit_explanatory_model(X,Y,model_results,cfg);
+                model_results.X_resid = X_resid;
+                model_results.Y_resid = Y_resid;
+                clear X_resid Y_resid
+            end
+        elseif ~isfield(cfg, 'confound_opt') && cfg.cat_Y == 0
+                [model_results, ~, Y_resid] = fit_explanatory_model(X,Y,model_results,cfg);
+                model_results.Y_resid = Y_resid; 
+                clear Y_resid
+        elseif cfg.cat_Y == 1
+                [model_results, X_resid, ~] = fit_explanatory_model(X,Y,model_results,cfg);
+                model_results.X_resid = X_resid; 
+                clear X_resid
+        end
+    else
+        [model_results, ~, ~] = fit_explanatory_model(X, Y, model_results, cfg);
+    end
 end
 
 disp('Finished running modeling analysis');
