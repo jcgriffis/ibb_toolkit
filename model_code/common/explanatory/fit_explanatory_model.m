@@ -1,4 +1,4 @@
-function model_results = fit_explanatory_model(X, Y, model_results, cfg)
+function [model_results, X, Y] = fit_explanatory_model(X, Y, model_results, cfg)
 
 % Fit explanatory model to full dataset
 % Performs confound regression if specified in cfg
@@ -9,17 +9,31 @@ function model_results = fit_explanatory_model(X, Y, model_results, cfg)
 % Joseph Griffis 2024
 
 %%%%% Regress out confound variables if they're included
-if ~isempty(cfg.confounds) && cfg.cat_Y == 0 && ~contains(cfg.model_spec, {'muniolsr', 'munimnr'})
+if ~isempty(cfg.confounds) && cfg.cat_Y == 0 && ~contains(cfg.model_spec, {'muniolsr', 'munimnr', 'municorr'})
+    
     disp('Regressing confounds out of Y...');    
     [Y, model_results.r2_confound, model_results.coeff_confound] = regress_confounds_from_Y(Y, cfg.confounds);
     disp(['Confound model explained ' num2str(round(model_results.r2_confound, 4)*100) '% variance in Y.']);
     disp('Continuing analysis with Y residuals as target variable');
-elseif ~isempty(cfg.confounds) && cfg.cat_Y == 1 && ~contains(cfg.model_spec, {'munilr', 'prop_sub'})
+    
+    if isfield(cfg, 'confound_opt')
+        if strcmp(cfg.confound_opt, 'regress_both')       
+            disp('Regressing confounds out of X...')
+            [X] = regress_confounds_from_X(X, cfg.confounds);
+            disp('Continuing analysis with X residuals as predictor variables');  
+        end
+    end
+
+elseif ~isempty(cfg.confounds) && cfg.cat_Y == 1 && ~contains(cfg.model_spec, {'munilr', 'prop_sub', 'municorr'})
+
     disp('Regressing confounds out of X...')
-    [X, model_results.coeff_confound] = regress_confounds_from_X(X, cfg.confounds);
+    [X] = regress_confounds_from_X(X, cfg.confounds);
     disp('Continuing analysis with X residuals as predictor variables');  
-elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr', 'munimnr'})
+
+elseif ~isempty(cfg.confounds) && contains(cfg.model_spec, {'munilr', 'muniolsr', 'munimnr', 'municorr'})
     disp('For selected modeling strategy, confounds are included as nuisance covariates in the model.');
+else
+    disp('No confounds included, proceeding with main analysis');
 end
 
 % Standardize data as indicated in cfg
@@ -73,7 +87,7 @@ switch cfg.model_spec
     case 'olsr'
         model_results = run_ols_modeling(X, Y, cfg, model_results);
     case 'municorr'
-        model_results = run_mass_univariate_corr(X, Y, model_results);
+        model_results = run_mass_univariate_corr(X, Y, cfg, model_results);
     case 'munilr'
         model_results = run_mass_univariate_lr(X, Y, cfg, model_results);
     case 'muniolsr'
