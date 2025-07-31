@@ -55,7 +55,11 @@ end
 % Restructure predicted and observed outcomes for outer loop test set 
 if perm_flag == 0
     cv_results.all.pred_y = get_summary(cv_results.pred_y, 3); % collapse over NaNs to get predictions across all folds for each repeat
-    cv_results.all.obs_y = Y; % observed scores for all patients
+    if ~isempty(cfg.confounds) && cfg.cat_Y == 0
+        cv_results.all.obs_y = get_summary(get_summary(cv_results.obs_y, 3),2); % observed scores for all patients
+    else
+        cv_results.all.obs_y = Y;
+    end
     if cfg.cat_Y == 1
         cv_results.all.pred_score = get_summary(cv_results.pred_score,3);
     end
@@ -63,7 +67,7 @@ end
 
 % Get correlation (or Fisher exact test) between mean out-of-fold predictions for all patients and observed outcome, compute p-value (analogous to LESYMAP)
 if cfg.cat_Y == 0 && perm_flag == 0
-    [cv_results.all.corr, cv_results.all.corr_pval] = corr(get_summary(cv_results.all.pred_y, 2), Y, 'tail', 'right');
+    [cv_results.all.corr, cv_results.all.corr_pval] = corr(get_summary(cv_results.all.pred_y, 2), cv_results.all.obs_y, 'tail', 'right');
     disp(['Full-sample Cross-Validation Correlation Test: r=' num2str(cv_results.all.corr) ', p=' num2str(cv_results.all.corr_pval)]);
 elseif cfg.cat_Y == 1 && perm_flag == 0
     cv_results.all.confusion = confusionchart(Y, mode(cv_results.all.pred_y,2));

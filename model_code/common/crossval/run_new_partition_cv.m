@@ -74,6 +74,32 @@ for i = 1:cfg.cv.repeats % Loop over CV repeats
                 y_pred_confound = [ones(length(y_test), 1) cfg.confounds(test_set,:)]*cv_results.coeff_confound(:,i,j);
                 y_test = y_test - y_pred_confound;
                 clear y_pred_confound
+
+                % Regress confounds out of X if specified
+                if isfield(cfg, 'confound_opt')
+                    if strcmp(cfg.confound_opt, 'regress_both')
+                        disp('Regressing confounds out of X...')
+                        [x_train, coeff_confound_x] = regress_confounds_from_X_cv(x_train, cfg.confounds(train_set,:));
+                        x_pred_confound = [ones(size(x_test,1),1) cfg.confounds(test_set,:)]*coeff_confound_x;
+                        x_test = x_test - x_pred_confound;
+                        clear x_pred_confound
+                        disp('Continuing analysis with X residuals as predictor variables');   
+                    end
+                end
+            end
+        elseif cfg.cat_Y == 1
+            if ~isempty(cfg.confounds)
+                % Regress confounds out of X if specified
+                if isfield(cfg, 'confound_opt')
+                    if strcmp(cfg.confound_opt, 'regress_both')
+                        disp('Regressing confounds out of X...')
+                        [x_train, coeff_confound_x] = regress_confounds_from_X_cv(x_train, cfg.confounds(train_set,:));
+                        x_pred_confound = [ones(size(x_test,1),1) cfg.confounds(test_set,:)]*coeff_confound_x;
+                        x_test = x_test - x_pred_confound;
+                        clear x_pred_confound                        
+                        disp('Continuing analysis with X residuals as predictor variables');   
+                    end
+                end 
             end
         end
 
