@@ -2,7 +2,11 @@ function cfg = get_and_format_table_data(beh_table, id_col, beh_col, pred_cols, 
 
 % Load behavioral csv file
 if ~istable(beh_table)
-    beh_table = readtable(beh_table);
+    if ~contains(beh_table, '.xls')
+        beh_table = readtable(beh_table, 'NumHeaderLines', 0, 'Delimiter', ',');
+    else
+        beh_table = readtable(beh_table);
+    end
 end
 
 % Get study IDs
