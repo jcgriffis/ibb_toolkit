@@ -32,9 +32,11 @@ elseif cfg.cat_Y == 0
     if isnumeric(Y)
         unique_vals_Y = unique(Y);
         unique_vals_X = unique(X(:));
-        if length(unique_vals_Y) <= 2
+        if length(unique_vals_Y) == 2
             if ~contains(cfg.model_spec, {'municorr', 'bmunz', 'ttest'})
                 error('Modeling approach assumes continuous outcome variable, but outcome variable only has two values. Check data and use classification approach if necessary.');
+            else
+                warning('Y data appear categorical. Proceeding with analysis, but make sure that the data are correct');
             end                
         end
         clear unique_vals_Y unique_vals_X
