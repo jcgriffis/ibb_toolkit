@@ -3,6 +3,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
+        IdPathFlag                      matlab.ui.control.CheckBox
         RankCorCheckBox                 matlab.ui.control.CheckBox
         RegressLesionVolumefromXandYCheckBox  matlab.ui.control.CheckBox
         CatYCheckBox                    matlab.ui.control.CheckBox
@@ -195,8 +196,6 @@ classdef run_modeling_gui < matlab.apps.AppBase
             if app.NIFTIButton.Value == 1
                 cfg.write_nifti_images = 1;
                 cfg.mask_path = string(app.BrainMaskText.Value);
-            elseif app.TableButton.Value == 1
-                cfg.write_nifti_images = 0;
             elseif app.MatrixButton.Value == 1
                 cfg.write_nifti_images = 0;
                 cfg.parcel_table = string(app.BrainMaskText.Value);
@@ -299,16 +298,32 @@ classdef run_modeling_gui < matlab.apps.AppBase
             if app.NIFTIButton.Value == 1 
                 data_dir = app.ImDirText.Value;
                 if app.LesionButton.Value == 1
-                    cfg = get_and_format_lesion_data(beh_csv, id_col, beh_col, app.RegistryFlag.Value, data_dir, cfg);
+                    if app.IdPathFlag.Value == 0
+                        cfg = get_and_format_lesion_data(beh_csv, id_col, beh_col, app.RegistryFlag.Value, data_dir, cfg);
+                    else
+                        cfg = get_and_format_lesion_data2(beh_csv, id_col, beh_col, cfg);
+                    end
                 else
-                    cfg = get_and_format_nifti_data(beh_csv, id_col, beh_col, app.RegistryFlag.Value, data_dir, cfg);
+                    if app.IdPathFlag.Value == 0
+                        cfg = get_and_format_nifti_data(beh_csv, id_col, beh_col, app.RegistryFlag.Value, data_dir, cfg);
+                    else
+                        cfg = get_and_format_nifti_data2(beh_csv, id_col, beh_col, cfg);
+                    end
                 end
             elseif app.MatrixButton.Value == 1
                 data_dir = app.ImDirText.Value;
-                cfg = get_and_format_matrix_data(beh_csv, id_col, beh_col, app.RegistryFlag.Value, data_dir, cfg);
+                if app.IdPathFlag.Value == 0
+                    cfg = get_and_format_matrix_data(beh_csv, id_col, beh_col, app.RegistryFlag.Value, data_dir, cfg);
+                else
+                    cfg = get_and_format_matrix_data2(beh_csv, id_col, beh_col, cfg);
+                end
             elseif app.ArrayButton.Value == 1
                 data_dir = app.ImDirText.Value;
-                cfg = get_and_format_array_data(beh_csv, id_col, beh_col, app.RegistryFlag.Value, data_dir, cfg);              
+                if app.IdPathFlag.Value == 0
+                    cfg = get_and_format_array_data(beh_csv, id_col, beh_col, app.RegistryFlag.Value, data_dir, cfg);   
+                else
+                    cfg = get_and_format_array_data2(beh_csv, id_col, beh_col, cfg);
+                end
             end
 
             % Set up confounds for nuisance regression if indicated
@@ -1046,6 +1061,18 @@ classdef run_modeling_gui < matlab.apps.AppBase
                 app.RegressLesionVolumefromXandYCheckBox.Enable = 1;                
             end
         end
+
+        % Value changed function: IdPathFlag
+        function IdPathFlagValueChanged(app, event)
+            value = app.IdPathFlag.Value;
+            if value == 1
+                app.SelectDataDirectoryButton.Enable = 0;
+                app.ImDirText.Enable = 0;
+            else
+                app.SelectDataDirectoryButton.Enable = 1;
+                app.ImDirText.Enable = 1;
+            end
+        end
     end
 
     % Component initialization
@@ -1280,7 +1307,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
             app.SelectBrainMaskButton = uibutton(app.UIFigure, 'push');
             app.SelectBrainMaskButton.ButtonPushedFcn = createCallbackFcn(app, @SelectBrainMaskButtonPushed, true);
             app.SelectBrainMaskButton.BackgroundColor = [0.651 0.651 0.651];
-            app.SelectBrainMaskButton.Position = [163 700 135 23];
+            app.SelectBrainMaskButton.Position = [163 687 135 23];
             app.SelectBrainMaskButton.Text = 'Select Brain Mask';
 
             % Create HyperParameterTuningPanel
@@ -1333,7 +1360,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
             app.SelectDataDirectoryButton = uibutton(app.UIFigure, 'push');
             app.SelectDataDirectoryButton.ButtonPushedFcn = createCallbackFcn(app, @SelectDataDirectoryButtonPushed, true);
             app.SelectDataDirectoryButton.BackgroundColor = [0.651 0.651 0.651];
-            app.SelectDataDirectoryButton.Position = [163 743 136 24];
+            app.SelectDataDirectoryButton.Position = [163 726 136 24];
             app.SelectDataDirectoryButton.Text = 'Select Data Directory';
 
             % Create SelectCSVfileButton
@@ -1376,7 +1403,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
             app.PredictorTypeButtonGroup.TitlePosition = 'centertop';
             app.PredictorTypeButtonGroup.Title = 'Predictor Type';
             app.PredictorTypeButtonGroup.FontWeight = 'bold';
-            app.PredictorTypeButtonGroup.Position = [10 701 124 51];
+            app.PredictorTypeButtonGroup.Position = [10 704 124 51];
 
             % Create LesionButton
             app.LesionButton = uiradiobutton(app.PredictorTypeButtonGroup);
@@ -1398,12 +1425,12 @@ classdef run_modeling_gui < matlab.apps.AppBase
             % Create ImDirText
             app.ImDirText = uitextarea(app.UIFigure);
             app.ImDirText.Placeholder = 'No directory selected';
-            app.ImDirText.Position = [308 743 533 24];
+            app.ImDirText.Position = [308 726 533 24];
 
             % Create BrainMaskText
             app.BrainMaskText = uitextarea(app.UIFigure);
             app.BrainMaskText.Placeholder = 'No mask selected (NIFTI Modality Only)';
-            app.BrainMaskText.Position = [308 699 533 25];
+            app.BrainMaskText.Position = [308 686 533 25];
 
             % Create SelectModelLabel
             app.SelectModelLabel = uilabel(app.UIFigure);
@@ -1475,13 +1502,13 @@ classdef run_modeling_gui < matlab.apps.AppBase
             app.SelectOutputDirectoryButton = uibutton(app.UIFigure, 'push');
             app.SelectOutputDirectoryButton.ButtonPushedFcn = createCallbackFcn(app, @SelectOutputDirectoryButtonPushed, true);
             app.SelectOutputDirectoryButton.BackgroundColor = [0.651 0.651 0.651];
-            app.SelectOutputDirectoryButton.Position = [163 656 135 24];
+            app.SelectOutputDirectoryButton.Position = [163 643 135 24];
             app.SelectOutputDirectoryButton.Text = 'Select Output Directory';
 
             % Create OutDirText
             app.OutDirText = uitextarea(app.UIFigure);
             app.OutDirText.Placeholder = 'No directory selected';
-            app.OutDirText.Position = [308 657 533 23];
+            app.OutDirText.Position = [308 644 533 23];
 
             % Create RegistryFlag
             app.RegistryFlag = uicheckbox(app.UIFigure);
@@ -1575,39 +1602,39 @@ classdef run_modeling_gui < matlab.apps.AppBase
             % Create SelectOutcomeVariableYListBoxLabel
             app.SelectOutcomeVariableYListBoxLabel = uilabel(app.UIFigure);
             app.SelectOutcomeVariableYListBoxLabel.HorizontalAlignment = 'right';
-            app.SelectOutcomeVariableYListBoxLabel.Position = [50 603 156 22];
+            app.SelectOutcomeVariableYListBoxLabel.Position = [50 590 156 22];
             app.SelectOutcomeVariableYListBoxLabel.Text = 'Select Outcome Variable (Y)';
 
             % Create SelectOutcomeVariableYListBox
             app.SelectOutcomeVariableYListBox = uilistbox(app.UIFigure);
             app.SelectOutcomeVariableYListBox.Items = {};
-            app.SelectOutcomeVariableYListBox.Position = [221 585 620 56];
+            app.SelectOutcomeVariableYListBox.Position = [221 572 620 56];
             app.SelectOutcomeVariableYListBox.Value = {};
 
             % Create SelectNuisanceRegressorsListBoxLabel
             app.SelectNuisanceRegressorsListBoxLabel = uilabel(app.UIFigure);
             app.SelectNuisanceRegressorsListBoxLabel.HorizontalAlignment = 'right';
-            app.SelectNuisanceRegressorsListBoxLabel.Position = [34 533 156 22];
+            app.SelectNuisanceRegressorsListBoxLabel.Position = [34 520 156 22];
             app.SelectNuisanceRegressorsListBoxLabel.Text = 'Select Nuisance Regressors';
 
             % Create SelectNuisanceRegressorsListBox
             app.SelectNuisanceRegressorsListBox = uilistbox(app.UIFigure);
             app.SelectNuisanceRegressorsListBox.Items = {};
             app.SelectNuisanceRegressorsListBox.Multiselect = 'on';
-            app.SelectNuisanceRegressorsListBox.Position = [221 514 620 56];
+            app.SelectNuisanceRegressorsListBox.Position = [221 501 620 56];
             app.SelectNuisanceRegressorsListBox.Value = {};
 
             % Create RegressLesionVolumefromYCheckBox
             app.RegressLesionVolumefromYCheckBox = uicheckbox(app.UIFigure);
             app.RegressLesionVolumefromYCheckBox.ValueChangedFcn = createCallbackFcn(app, @RegressLesionVolumefromYCheckBoxValueChanged, true);
             app.RegressLesionVolumefromYCheckBox.Text = 'Regress Lesion Volume from Y';
-            app.RegressLesionVolumefromYCheckBox.Position = [221 489 243 22];
+            app.RegressLesionVolumefromYCheckBox.Position = [221 476 243 22];
 
             % Create NuisanceRegressorCheckBox
             app.NuisanceRegressorCheckBox = uicheckbox(app.UIFigure);
             app.NuisanceRegressorCheckBox.ValueChangedFcn = createCallbackFcn(app, @NuisanceRegressorCheckBoxValueChanged, true);
             app.NuisanceRegressorCheckBox.Text = '';
-            app.NuisanceRegressorCheckBox.Position = [196 532 25 22];
+            app.NuisanceRegressorCheckBox.Position = [196 519 25 22];
 
             % Create CatYCheckBox
             app.CatYCheckBox = uicheckbox(app.UIFigure);
@@ -1621,7 +1648,7 @@ classdef run_modeling_gui < matlab.apps.AppBase
             app.RegressLesionVolumefromXandYCheckBox = uicheckbox(app.UIFigure);
             app.RegressLesionVolumefromXandYCheckBox.ValueChangedFcn = createCallbackFcn(app, @RegressLesionVolumefromXandYCheckBoxValueChanged, true);
             app.RegressLesionVolumefromXandYCheckBox.Text = 'Regress Lesion Volume from X and Y';
-            app.RegressLesionVolumefromXandYCheckBox.Position = [466 490 301 22];
+            app.RegressLesionVolumefromXandYCheckBox.Position = [466 477 301 22];
 
             % Create RankCorCheckBox
             app.RankCorCheckBox = uicheckbox(app.UIFigure);
@@ -1629,6 +1656,13 @@ classdef run_modeling_gui < matlab.apps.AppBase
             app.RankCorCheckBox.Visible = 'off';
             app.RankCorCheckBox.Text = 'Spearman Rank Correlation';
             app.RankCorCheckBox.Position = [217 421 228 22];
+
+            % Create IdPathFlag
+            app.IdPathFlag = uicheckbox(app.UIFigure);
+            app.IdPathFlag.ValueChangedFcn = createCallbackFcn(app, @IdPathFlagValueChanged, true);
+            app.IdPathFlag.Text = 'Subject IDs are full filepaths to imaging data';
+            app.IdPathFlag.FontSize = 14;
+            app.IdPathFlag.Position = [167 759 299 22];
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
