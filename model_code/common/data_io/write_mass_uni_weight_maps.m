@@ -11,7 +11,7 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
     unc_thresh = unc_thresh{2};
 
     % Unthresholded coeff weight map 
-    if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~ strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'munimnr')
+    if strcmp(model_results.cfg.model_spec, 'municorr')
         nifti_out(:) = 0;
         nifti_out(model_results.cfg.mask_inds(model_results.X_ind)) = model_results.coeff;
         niftiwrite(nifti_out, 'corr_map_unthresh', nifti_hdr);     
