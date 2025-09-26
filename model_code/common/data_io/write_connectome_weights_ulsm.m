@@ -10,7 +10,7 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
     unc_thresh = strsplit(num2str(model_results.cfg.unc_thresh), '.');
     unc_thresh = unc_thresh{2};
     
-    if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~ strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'munimnr')
+    if strcmp(model_results.cfg.model_spec, 'municorr')
         % Unthresholded coeff weight map 
         stat = model_results.coeff;
         out_name = 'corr_map_unthresh';
