@@ -33,12 +33,12 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
     % FWE results for theoretical p-values
     if isfield(model_results, 'coeff_vfwe_pvals')
         stat = model_results.tstat .* (model_results.coeff_vfwe_pvals < model_results.cfg.fwe_thresh);
-        out_name = [stat_name '_vfwe' fwe_thresh '.nii'];
+        out_name = [stat_name '_vfwe' fwe_thresh ''];
         write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);
        
         if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'munimnr')  
             stat = model_results.coeff .* (model_results.coeff_vfwe_pvals < model_results.cfg.fwe_thresh);
-            out_name = ['coeff_vfwe' fwe_thresh '.nii'];
+            out_name = ['coeff_vfwe' fwe_thresh ''];
             write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);
         end
     end
@@ -46,12 +46,12 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
     % FDR results for theoretical p-values
     if isfield(model_results, 'coeff_vfdr_pvals')
         stat = model_results.tstat .* (model_results.coeff_vfdr_pvals < model_results.cfg.fdr_thresh);
-        out_name = [stat_name '_vfdr' fdr_thresh '.nii'];
+        out_name = [stat_name '_vfdr' fdr_thresh ''];
         write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);
         
         if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'munimnr')      
             stat = model_results.coeff .* (model_results.coeff_vfdr_pvals < model_results.cfg.fdr_thresh);
-            out_name = ['coeff_vfdr' fdr_thresh '.nii'];
+            out_name = ['coeff_vfdr' fdr_thresh ''];
             write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);    
         end
     end
@@ -66,12 +66,12 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
         % Uncorrected voxel p-values
         if model_results.cfg.perm.write_uncorrected_images == 1 && isfield(model_results.perm, 'p_coeff')
             stat = model_results.tstat .* (model_results.perm.p_coeff < model_results.cfg.unc_thresh);
-            out_name = [stat_name '_uncp' unc_thresh '.nii'];
+            out_name = [stat_name '_uncp' unc_thresh ''];
             write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);
  
             if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'munimnr')  
                 stat = model_results.coeff .* (model_results.perm.p_coeff < model_results.cfg.unc_thresh);
-                out_name = ['coeff_uncp' unc_thresh '.nii'];       
+                out_name = ['coeff_uncp' unc_thresh ''];       
                 write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);        
             end
         end
@@ -79,24 +79,24 @@ if ~strcmp(model_results.cfg.model_spec, 'prop_sub')
         % FWE voxel p-values
         if isfield(model_results.perm, 'fwep_coeff')
             stat = model_results.tstat .* (model_results.perm.fwep_coeff < model_results.cfg.fwe_thresh);
-            out_name = [stat_name '_vfwe' fwe_thresh '.nii'];
+            out_name = [stat_name '_vfwe' fwe_thresh ''];
             write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);
  
             if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'munimnr')           
                 stat = model_results.coeff .* (model_results.perm.fwep_coeff < model_results.cfg.fwe_thresh);
-                out_name = ['coeff_vfwe' fwe_thresh '.nii'];
+                out_name = ['coeff_vfwe' fwe_thresh ''];
                 write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);      
             end
         end
         
         % FWE voxel p-values
         if isfield(model_results.perm, 'fdrp_coeff')
-            stat = model_results.tstat .* (model_results.perm.fdrp_coeff < model_results.cfg.fdrp_thresh);
-            out_name = [stat_name '_vfdr' fdr_thresh '.nii'];
+            stat = model_results.tstat .* (model_results.perm.fdrp_coeff < model_results.cfg.fdr_thresh);
+            out_name = [stat_name '_vfdr' fdr_thresh ''];
             write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);
             if ~strcmp(model_results.cfg.model_spec, 'munilr') && ~strcmp(model_results.cfg.model_spec, 'muniolsr') && ~strcmp(model_results.cfg.model_spec, 'bmunz') && ~strcmp(model_results.cfg.model_spec, 'ttest') && ~strcmp(model_results.cfg.model_spec, 'munimnr')      
-                stat = model_results.coeff .* (model_results.perm.fdrp_coeff < model_results.cfg.fdrp_thresh);
-                out_name = ['coeff_vfdr' fdr_thresh '.nii'];
+                stat = model_results.coeff .* (model_results.perm.fdrp_coeff < model_results.cfg.fdr_thresh);
+                out_name = ['coeff_vfdr' fdr_thresh ''];
                 write_edge_file(model_results.cfg.parcel_table, model_results.cfg.tu_mask, model_results.X_ind, stat, model_results.cfg.direction, out_name);    
             end
         end
