@@ -27,7 +27,7 @@ elseif cfg.standardize == 3 % Convert X and Y to z-scores
     x_train(:,miss_col)=0; % Since normalize will cause columns to become NaN if they are all 0
     x_test = normalize(x_test, 'center', cfg.Cx, 'scale', cfg.Sx);
     x_test(:,miss_col)=0; % Since normalize will cause columns to become NaN if they have SD = 0 in train set
-    if cfg.cat_Y == 0
+    if cfg.cat_Y == 1
         disp('Unable to standardize categorical Y, setting standardize flag to 1');
         cfg.standardize = 1;
     else
