@@ -25,6 +25,11 @@ for i = 1:cfg.cv.repeats % Loop over CV repeats
         end
     end
 
+    % Add other predictors to stacked model
+    if isfield(cfg, 'other_predictors')
+        X_stack = [X_stack, cfg.other_predictors];
+    end
+
     % Loop over outer folds
     for j = 1:cfg.cv.folds
         
@@ -41,6 +46,12 @@ for i = 1:cfg.cv.repeats % Loop over CV repeats
         y_test = Y(test_set==1);  
         x_train = X_stack(train_set==1,:);
         y_train = Y(train_set==1);
+        
+        % Permute outcome if permutation iteration
+        if perm_flag == 1
+            y_train = y_train(randperm(length(y_train)'));
+            y_test = y_test(randperm(length(y_test)'));
+        end
 
         % Apply standardization if specified
         if cfg.standardize == 1  % Convert X to z-scores

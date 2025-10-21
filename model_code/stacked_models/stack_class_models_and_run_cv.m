@@ -56,7 +56,11 @@ for i = 1:length(cfg.model_paths)
 end 
 
 % Preallocate stacked results output
-stacked_results = preallocate_cv_results(length(Y), length(base_results.pred_y), cfg);
+if ~isfield(cfg, 'other_predictors')
+    stacked_results = preallocate_cv_results(length(Y), length(base_results.pred_y), cfg);
+else
+    stacked_results = preallocate_cv_results(length(Y), length(base_results.pred_y)+size(cfg.other_predictors,2), cfg);
+end  
 
 % Run cross-validation to fit stacked models
 perm_flag = 0;

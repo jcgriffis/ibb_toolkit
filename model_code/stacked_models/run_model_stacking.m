@@ -28,4 +28,52 @@ if cfg.cv.save_cv_results == 1
     end
 end
 
+if cfg.fit_explanatory_model == 1
+
+    for i = 1:length(cfg.model_paths)
+
+        % Load results and create full-sample X
+        load(fullfile(cfg.model_paths(i), 'model_results.mat'));
+
+        if cfg.cat_Y == 0
+            cfg.X(:,i) = model_results.pred_y;
+        elseif cfg.cat_Y == 1
+            if isfield(cfg, 'use_scores')
+                cfg.X(:,i) = model_results.pred_score;
+            elseif isfield(cfg, 'use_labels')
+                cfg.X(:,i) = model_results.pred_y;
+            else 
+                cfg.X(:,i) = model_results.pred_y;
+            end
+        end
+
+    end
+
+    % Add other predictors as needed
+    if isfield(cfg, 'other_predictiors')
+        cfg.X = [cfg.X, cfg.other_predictors];
+    end
+
+    % Get outcome 
+    cfg.Y = model_results.obs_y;
+
+    % Set params to pass trimming 
+    cfg.freq_thresh = 0;
+    cfg.min_obs = 0;
+    cfg.trim_X = 0;
+    cfg.gen_freq_map = 0;
+    cfg.gen_lvol_map = 0;
+    cfg.dtlvc = 0;
+    cfg.strat_var = cfg.Y;
+    cfg.cross_validation = 0;
+    cfg.standardize = 1;
+    cfg.cv.stacked_model = 1;
+    clear model_results
+
+    % Run full-sample model
+    cfg.save_model_results = 1;
+    fit_and_evaluate_model(cfg);
+    
+end 
+
 end
