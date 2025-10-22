@@ -8,7 +8,7 @@ function method_text = gen_methods_text(model_results)
 cfg = model_results.cfg;
 
 if ~isempty(cfg.strat_var)
-    if ~isfield(cfg, 'strat_name') && cfg.strat_var ~= model_results.obs_y
+    if all(~isfield(cfg, 'strat_name') & cfg.strat_var ~= model_results.obs_y)
         cfg.strat_name = '[INSERT VARIABLE NAME]';
     elseif cfg.strat_var == model_results.obs_y
         cfg.strat_name = 'the outcome';
