@@ -31,7 +31,7 @@ if ~strcmp(cfg.model_spec, 'olsr')
         [X_trim, X_inc_ind] = trim_X_data(single(cfg.X), cfg.min_obs, cfg.freq_thresh); % get trimmed X_trim matrix and indices for retained cells
     else
         X_trim = single(cfg.X);
-        X_inc_ind = 1:length(X_trim);
+        X_inc_ind = 1:size(X_trim,2);
     end
     Y = cfg.Y; % final response variable
     
