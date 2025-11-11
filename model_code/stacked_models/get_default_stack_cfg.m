@@ -35,7 +35,7 @@ switch cfg.model_spec
         end        
         cfg.standardize = 0;
     case {'lasso', 'ridge', 'rlinsvr', 'logistic_lasso', 'logistic_ridge', 'rlinsvc'} % Regularized linear models
-        if contains(cfg.model_spec, {'lasso', 'ridge'})
+        if contains(cfg.model_spec, {'lasso', 'ridge'}) && ~contains(cfg.model_spec, 'logistic')
             cfg.learner = 'leastsquares'; % OLS regression
         elseif contains(cfg.model_spec, {'logistic'})
             cfg.learner = 'logistic';
