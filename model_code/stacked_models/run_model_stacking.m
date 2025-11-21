@@ -33,20 +33,20 @@ if cfg.fit_explanatory_model == 1
     for i = 1:length(cfg.model_paths)
 
         % Load results and create full-sample X
+        load(fullfile(cfg.model_paths(i), 'cv_results.mat'));
         load(fullfile(cfg.model_paths(i), 'model_results.mat'));
 
         if cfg.cat_Y == 0
-            cfg.X(:,i) = model_results.pred_y;
+            cfg.X(:,i) = nanmean(cv_results.all.pred_y,2);
         elseif cfg.cat_Y == 1
             if isfield(cfg, 'use_scores')
-                cfg.X(:,i) = model_results.pred_score;
+                cfg.X(:,i) = nanmean(cv_results.all.pred_score,2);
             elseif isfield(cfg, 'use_labels')
-                cfg.X(:,i) = model_results.pred_y;
+                cfg.X(:,i) = mode(cv_results.all.pred_y,2);
             else 
-                cfg.X(:,i) = model_results.pred_y;
+                cfg.X(:,i) = mode(cv_results.all.pred_y,2);
             end
         end
-
     end
 
     % Add other predictors as needed
@@ -66,9 +66,13 @@ if cfg.fit_explanatory_model == 1
     cfg.dtlvc = 0;
     cfg.strat_var = cfg.Y;
     cfg.cross_validation = 0;
-    cfg.standardize = 1;
-    cfg.cv.stacked_model = 1;
-    clear model_results
+    if isfield(model_results.cfg, 'strat_var')
+        cfg.strat_var = model_results.cfg.strat_var;
+        if isfield(model_results.cfg, 'strat_groups')
+            cfg.strat_groups = model_results.cfg.strat_groups;
+        end
+    end
+    clear model_results cv_results
 
     % Run full-sample model
     cfg.save_model_results = 1;
