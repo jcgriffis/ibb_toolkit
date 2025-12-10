@@ -106,19 +106,27 @@ if cfg.fit_explanatory_model == 1
     if ~isempty(cfg.confounds)
         if isfield(cfg, 'confound_opt')
             if strcmp(cfg.confound_opt, 'regress_both')
-                [model_results, X_resid, Y_resid] = fit_explanatory_model(X,Y,model_results,cfg);
-                model_results.X_resid = X_resid;
-                model_results.Y_resid = Y_resid;
-                clear X_resid Y_resid
+                if ~contains(cfg.model_spec, {'muniolsr', 'munimnr', 'municorr'})
+                    [model_results, X_resid, Y_resid] = fit_explanatory_model(X,Y,model_results,cfg);
+                    model_results.X_resid = X_resid;
+                    model_results.Y_resid = Y_resid;
+                    clear X_resid Y_resid
+                else
+                    [model_results, ~, ~] = fit_explanatory_model(X,Y,model_results,cfg);
+                end
             end
         elseif ~isfield(cfg, 'confound_opt') && cfg.cat_Y == 0
                 [model_results, ~, Y_resid] = fit_explanatory_model(X,Y,model_results,cfg);
                 model_results.Y_resid = Y_resid; 
                 clear Y_resid
         elseif cfg.cat_Y == 1
-                [model_results, X_resid, ~] = fit_explanatory_model(X,Y,model_results,cfg);
-                model_results.X_resid = X_resid; 
-                clear X_resid
+                if ~contains(cfg.model_spec, {'munilr', 'prop_sub', 'municorr'})            
+                    [model_results, X_resid, ~] = fit_explanatory_model(X,Y,model_results,cfg);
+                    model_results.X_resid = X_resid; 
+                    clear X_resid
+                else
+                    [model_results, ~, ~] = fit_explanatory_model(X,Y,model_results,cfg);
+                end                
         end
     else
         [model_results, ~, ~] = fit_explanatory_model(X, Y, model_results, cfg);
