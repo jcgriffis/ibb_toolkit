@@ -44,7 +44,7 @@ if cfg.fit_explanatory_model == 1
             elseif isfield(cfg, 'use_labels')
                 cfg.X(:,i) = mode(cv_results.all.pred_y,2);
             else 
-                cfg.X(:,i) = mode(cv_results.all.pred_y,2);
+                cfg.X(:,i) = nanmean(cv_results.all.pred_score,2);
             end
         end
     end
