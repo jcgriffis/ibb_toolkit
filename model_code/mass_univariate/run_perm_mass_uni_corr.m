@@ -5,7 +5,15 @@ function [model_results] = run_perm_mass_uni_corr(X, Y, cfg, model_results)
 
 % Get permuted Y
 if ~isempty(cfg.confounds)
-    mdl = fitlm(cfg.confounds, Y);
+    if isfield(cfg, 'cor_type')
+        if strcmp(cfg.cor_type, 'Spearman')
+            mdl = fitlm(tiedrank(cfg.confounds), tiedrank(Y));
+        else    
+            mdl = fitlm(cfg.confounds, Y);
+        end
+    else
+        mdl = fitlm(cfg.confounds, Y);
+    end
     Y = mdl.Residuals.Raw;
 end
 
