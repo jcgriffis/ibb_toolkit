@@ -87,13 +87,29 @@ switch cfg.model_spec
     case 'olsr'
         model_results = run_ols_modeling(X, Y, cfg, model_results);
     case 'municorr'
-        model_results = run_mass_univariate_corr(X, Y, cfg, model_results);
+        if ~isfield(cfg, 'test_interaction')
+            model_results = run_mass_univariate_corr(X, Y, cfg, model_results);
+        else
+            model_results = run_mass_univariate_corr_int(X, Y, cfg, model_results);
+        end
     case 'munilr'
-        model_results = run_mass_univariate_lr(X, Y, cfg, model_results);
+        if ~isfield(cfg, 'test_interaction')
+            model_results = run_mass_univariate_lr(X, Y, cfg, model_results);
+        else 
+            model_results = run_mass_univariate_lr_int(X, Y, cfg, model_results);
+        end
     case 'muniolsr'
-        model_results = run_mass_univariate_olsr(X, Y, cfg, model_results);   
+        if ~isfield(cfg, 'test_interaction')
+            model_results = run_mass_univariate_olsr(X, Y, cfg, model_results);   
+        else
+            model_results = run_mass_univariate_olsr_int(X, Y, cfg, model_results);   
+        end
     case 'munimnr'
-        model_results = run_mass_univariate_mnr(X, Y, cfg, model_results);
+        if ~isfield(cfg, 'test_interaction')
+            model_results = run_mass_univariate_mnr(X, Y, cfg, model_results);
+        else
+            model_results = run_mass_univariate_mnr_int(X, Y, cfg, model_results);
+        end            
     case 'bmunz'
         model_results = run_brunner_munzel_test(X, Y, cfg, model_results);
     case 'ttest'
@@ -119,13 +135,29 @@ if cfg.permutation == 1
         case {'kernsvc', 'linsvc'}
             [model_results] = run_perm_svc(X, Y, cfg, model_results);  
         case 'municorr'
-            [model_results] = run_perm_mass_uni_corr(X, Y, cfg, model_results);
+            if ~isfield(cfg, 'test_interaction')
+               [model_results] = run_perm_mass_uni_corr(X, Y, cfg, model_results);
+            else
+               [model_results] = run_perm_mass_uni_corr_int(X, Y, cfg, model_results);                
+            end
         case 'munilr'
-            [model_results] = run_perm_mass_uni_lr(X, Y, cfg, model_results);  
+            if ~isfield(cfg, 'test_interaction')
+                [model_results] = run_perm_mass_uni_lr(X, Y, cfg, model_results);  
+            else
+                [model_results] = run_perm_mass_uni_lr_int(X, Y, cfg, model_results);  
+            end
         case 'muniolsr'
-            [model_results] = run_perm_mass_uni_olsr(X, Y, cfg, model_results);  
+            if ~isfield(cfg, 'test_interaction')
+                [model_results] = run_perm_mass_uni_olsr(X, Y, cfg, model_results);  
+            else
+                [model_results] = run_perm_mass_uni_olsr_int(X, Y, cfg, model_results);  
+            end                
         case 'munimnr'
-            [model_results] = run_perm_mass_uni_mnr(X, Y, cfg, model_results);              
+            if ~isfield(cfg, 'test_interaction')
+                [model_results] = run_perm_mass_uni_mnr(X, Y, cfg, model_results);   
+            else
+                [model_results] = run_perm_mass_uni_mnr_int(X, Y, cfg, model_results);   
+            end
     end    
 end
 
