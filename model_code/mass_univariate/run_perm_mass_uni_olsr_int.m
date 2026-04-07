@@ -1,54 +1,46 @@
-function model_results = run_perm_mass_uni_lr(X, Y, cfg, model_results)
+function model_results = run_perm_mass_uni_olsr_int(X, Y, cfg, model_results)
     
-% Permutation tests for mass univariate logistic regressions
-% The approach is based on Potter et al., 2005 - Statistics in Medicine
+% Permutation tests for mass univariate OLS regressions, uses Freedman-Lane (Winkler et al., 2014)
 % Joseph Griffis 2024
 
 % Get permuted Y
 n_perm = cfg.perm.n_perm;
-perm_order = zeros(length(Y), n_perm);      
+perm_order = zeros(length(Y), n_perm);        
 for i = 1:n_perm
     perm_order(:,i) = randperm(length(Y))';
 end    
 
-% glmfit requires Y to be in range [0,1]
-if min(Y) ~= 0
-    Y(Y < 0) = 0;
-end
-
-% Preallocate permutation correlation matrix
+% Preallocate permutation matrix
 t_perm = zeros(size(X,2), n_perm);
 
-% Define confounds (parfor doesn't like dot indexing)
+% Get confounds
 confounds = cfg.confounds;
-
-% Define options 
-options = statset('Display','off', 'MaxIter', 5);
+int_term = confounds(:,cfg.int_term);
 
 % Run permutations
 if cfg.parallel == 1
     for j = 1:n_perm
-        disp(['Running permutation analysis:' num2str(j)])
         my_perm = perm_order(:,j);
-        confound_des = [ones(size(X,1),1), confounds];
-        parfor i = 1:size(t_perm,2)
-            warning('off', 'stats:glmfit:IllConditioned');       
-            warning('off', 'stats:glmfit:IterationLimit');        
-            [~,~,res] = regress(X(:,i), confound_des);                            
-            [~,~,stats] = glmfit([res(my_perm), confounds], Y, 'binomial', 'Options', options);
+        confound_des = [ones(size(X,1),1), confounds];        
+        disp(['Running permutation analysis:' num2str(j)])
+        parfor i = 1:size(t_perm,1)
+            warning('off', 'stats:glmfit:IllConditioned');     
+            warning('off', 'stats:glmfit:IterationLimit');       
+            res = regress(Y, [confound_des, X(:,i)]);      
+            [~,~,stats] = glmfit([X(:,i).*int_term, X(:,i), confounds], res(my_perm), 'normal');
             t_perm(i,j) = stats.t(2);
         end
     end
 else
     for j = 1:n_perm
-        disp(['Running permutation analysis:' num2str(j)])
         my_perm = perm_order(:,j);
-        confound_des = [ones(size(X,1),1), confounds];
-        for i = 1:size(t_perm,2)
-            warning('off', 'stats:glmfit:IllConditioned');       
-            warning('off', 'stats:glmfit:IterationLimit');        
-            [~,~,res] = regress(X(:,i), confound_des);                            
-            [~,~,stats] = glmfit([res(my_perm), confounds], Y, 'binomial', 'Options', options);
+        confound_des = [ones(size(X,1),1), confounds];        
+        disp(['Running permutation analysis:' num2str(j)])
+        for i = 1:size(t_perm,1)
+            warning('off', 'stats:glmfit:IllConditioned');     
+            warning('off', 'stats:glmfit:IterationLimit');       
+            res = regress(Y, [confound_des, X(:,i)]);      
+            [~,~,stats] = glmfit([X(:,i).*int_term, X(:,i), confounds], res(my_perm), 'normal');
             t_perm(i,j) = stats.t(2);
         end
     end

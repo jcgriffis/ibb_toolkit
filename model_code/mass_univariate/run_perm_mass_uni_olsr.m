@@ -1,12 +1,15 @@
 function model_results = run_perm_mass_uni_olsr(X, Y, cfg, model_results)
     
-% Permutation tests for mass univariate OLS regressions - takes forever
+% Permutation tests for mass univariate OLS regressions - uses Freedman-Lane (Winkler et al., 2014)
 % Joseph Griffis 2024
 
 % Residualize Y if necessary for Freedman-Lane (Winkler et al., 2014)
 if ~isempty(cfg.confounds)
+    confounds = cfg.confounds;    
     mdl = fitlm(cfg.confounds, Y);
     Y = mdl.Residuals.Raw;
+else 
+    confounds = [];
 end
 
 % Get permuted Y
@@ -19,15 +22,12 @@ end
 % Preallocate permutation matrix
 t_perm = zeros(size(X,2), n_perm);
 
-% Get confounds
-confounds = cfg.confounds;
-
 % Run permutations
 if cfg.parallel == 1
     for j = 1:n_perm
         perm_Yj = perm_Y(:,j);
         disp(['Running permutation analysis:' num2str(j)])
-        parfor i = 1:length(t_perm)
+        parfor i = 1:size(t_perm,1)
             warning('off', 'stats:glmfit:IllConditioned');     
             warning('off', 'stats:glmfit:IterationLimit');            
             [~,~,stats] = glmfit([X(:,i), confounds], perm_Yj, 'normal');
@@ -39,7 +39,7 @@ else
     warning('off', 'stats:glmfit:IterationLimit');    
     for j = 1:n_perm
         disp(['Running permutation analysis:' num2str(j)])
-        for i = 1:length(t_perm)
+        for i = 1:size(t_perm,1)
             [~,~,stats] = glmfit([X(:,i), confounds], perm_Y(:,j), 'normal');
             t_perm(i,j) = stats.t(2);
         end

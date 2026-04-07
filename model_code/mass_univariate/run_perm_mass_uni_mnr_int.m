@@ -1,4 +1,4 @@
-function model_results = run_perm_mass_uni_mnr(X, Y, cfg, model_results)
+function model_results = run_perm_mass_uni_mnr_int(X, Y, cfg, model_results)
     
 % Permutation tests for mass univariate ordinal logistic regressions
 % The approach is based on Potter et al., 2005 - Statistics in Medicine
@@ -21,6 +21,7 @@ t_perm = zeros(size(X,2), n_perm);
 % Define confounds (parfor doesn't like dot indexing)
 confounds = cfg.confounds;
 n_levels = numel(unique(Y));
+int_term = confounds(:,cfg.int_term);
 
 % Run permutations
 if cfg.parallel == 1
@@ -32,16 +33,16 @@ if cfg.parallel == 1
             parfor i = 1:size(t_perm,1)
                 warning('off', 'MATLAB:nearlySingularMatrix');        
                 warning('off', 'stats:mnrfit:IterOrEvalLimit'); 
-                [~,~,res] = regress(X(:,i), confound_des);                
-                mdl = fitmnr([res(my_perm,i), confounds], Y, 'model', 'ordinal');
+                [~,~,res] = regress(X(:,i).*int_term, [confound_des, X(:,i)]);                
+                mdl = fitmnr([res(my_perm,i), confounds, X(:,i)], Y, 'model', 'ordinal');
                 t_perm(i,j) = mdl.Coefficients.tStat(n_levels);
             end        
         else
             parfor i = 1:size(t_perm,1)        
                 warning('off', 'MATLAB:nearlySingularMatrix');        
                 warning('off', 'stats:mnrfit:IterOrEvalLimit');        
-                [~,~,res] = regress(X(:,i), confound_des);                                
-                [~,~,stats] = mnrfit([res(my_perm,i), confounds], Y, 'model', 'ordinal');
+                [~,~,res] = regress(X(:,i).*int_term, [confound_des, X(:,i)]);                
+                [~,~,stats] = mnrfit([res(my_perm,i), confounds, X(:,i)], Y, 'model', 'ordinal');
                 t_perm(i,j) = stats.t(n_levels);
             end
         end
@@ -55,16 +56,16 @@ else
             for i = 1:size(t_perm,1)
                 warning('off', 'MATLAB:nearlySingularMatrix');        
                 warning('off', 'stats:mnrfit:IterOrEvalLimit'); 
-                [~,~,res] = regress(X(:,i), confound_des);                
-                mdl = fitmnr([res(my_perm,i), confounds], Y, 'model', 'ordinal');
+                [~,~,res] = regress(X(:,i).*int_term, [confound_des, X(:,i)]);                
+                mdl = fitmnr([res(my_perm,i), confounds, X(:,i)], Y, 'model', 'ordinal');
                 t_perm(i,j) = mdl.Coefficients.tStat(n_levels);
             end        
         else
             for i = 1:size(t_perm,1)        
                 warning('off', 'MATLAB:nearlySingularMatrix');        
                 warning('off', 'stats:mnrfit:IterOrEvalLimit');        
-                [~,~,res] = regress(X(:,i), confound_des);                                
-                [~,~,stats] = mnrfit([res(my_perm,i), confounds], Y, 'model', 'ordinal');
+                [~,~,res] = regress(X(:,i).*int_term, [confound_des, X(:,i)]);                
+                [~,~,stats] = mnrfit([res(my_perm,i), confounds, X(:,i)], Y, 'model', 'ordinal');
                 t_perm(i,j) = stats.t(n_levels);
             end
         end

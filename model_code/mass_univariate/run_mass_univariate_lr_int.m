@@ -1,4 +1,4 @@
-function model_results = run_mass_univariate_lr(X, Y, cfg, model_results)
+function model_results = run_mass_univariate_lr_int(X, Y, cfg, model_results)
 
 % Run mass univariate logistic regression - doesn't currently work
 % Joseph Griffis 2024
@@ -13,9 +13,8 @@ if min(Y) ~= 0
 end
 
 % Get confounds (parfor doesn't like dot indexing)
-if isfield(cfg, 'confounds') && cfg.parallel == 1
-    confounds = cfg.confounds;
-end
+confounds = cfg.confounds;
+int_term = confounds(:,cfg.int_term);
 
 % Define options
 options = statset('Display','off', 'MaxIter', 5);
@@ -25,7 +24,7 @@ if cfg.parallel == 1
     parfor i = 1:length(tstat)
         warning('off', 'stats:glmfit:IllConditioned');     
         warning('off', 'stats:glmfit:IterationLimit');
-        [~,~,stats] = glmfit([X(:,i), confounds], Y, 'binomial', 'Options', options);
+        [~,~,stats] = glmfit([X(:,i).*int_term, X(:,i), confounds], Y, 'binomial', 'Options', options);
         pval(i) = stats.p(2);
         tstat(i) = stats.t(2);
     end
@@ -33,7 +32,7 @@ else
     warning('off', 'stats:glmfit:IllConditioned');  
     warning('off', 'stats:glmfit:IterationLimit');
     for i = 1:length(tstat)
-        [~,~,stats] = glmfit([X(:,i), cfg.confounds], Y, 'binomial', 'Options', options);
+        [~,~,stats] = glmfit([X(:,i).*int_term, X(:,i), confounds], Y, 'binomial', 'Options', options);
         pval(i) = stats.p(2);
         tstat(i) = stats.t(2);
     end

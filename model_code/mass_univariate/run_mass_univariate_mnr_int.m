@@ -1,4 +1,4 @@
-function model_results = run_mass_univariate_mnr(X, Y, cfg, model_results)
+function model_results = run_mass_univariate_mnr_int(X, Y, cfg, model_results)
 
 % Run mass univariate ordinal logistic regression
 % Joseph Griffis 2024
@@ -15,6 +15,7 @@ coeff = zeros(size(X,2),1);
 % Get confounds (parfor doesn't like dot indexing)
 confounds = cfg.confounds;
 n_levels = numel(unique(Y));
+int_term = confounds(:,cfg.int_term);
 
 % Parallel processing if indicated
 if cfg.parallel == 1
@@ -22,7 +23,7 @@ if cfg.parallel == 1
         parfor i = 1:length(tstat)
             warning('off', 'MATLAB:nearlySingularMatrix');        
             warning('off', 'stats:mnrfit:IterOrEvalLimit');      
-            mdl = fitmnr([X(:,i), confounds], Y, 'model', 'ordinal');
+            mdl = fitmnr([X(:,i).*int_term, X(:,i), confounds], Y, 'model', 'ordinal');
             pval(i) = mdl.Coefficients.pValue(n_levels);
             tstat(i) = mdl.Coefficients.pValue(n_levels);
             coeff(i) = mdl.Coefficients.Value(n_levels);
@@ -31,7 +32,7 @@ if cfg.parallel == 1
         parfor i = 1:length(tstat)
             warning('off', 'MATLAB:nearlySingularMatrix');        
             warning('off', 'stats:mnrfit:IterOrEvalLimit');      
-            [B,~,stats] = mnrfit([X(:,i), confounds], Y, 'model', 'ordinal');
+            [B,~,stats] = mnrfit([X(:,i).*int_term, X(:,i), confounds], Y, 'model', 'ordinal');
             pval(i) = stats.p(n_levels);
             tstat(i) = stats.t(n_levels);
             coeff(i) = B(n_levels);
@@ -42,7 +43,7 @@ else
         for i = 1:length(tstst)
             warning('off', 'MATLAB:nearlySingularMatrix');        
             warning('off', 'stats:mnrfit:IterOrEvalLimit');      
-            mdl = fitmnr([X(:,i), confounds], Y, 'model', 'ordinal');
+            mdl = fitmnr([X(:,i).*int_term, X(:,i), confounds], Y, 'model', 'ordinal');
             pval(i) = mdl.Coefficients.pValue(n_levels);
             tstat(i) = mdl.Coefficients.pValue(n_levels);
             coeff(i) = mdl.Coefficients.Value(n_levels);
@@ -51,7 +52,7 @@ else
         for i = 1:length(tstat)
             warning('off', 'MATLAB:nearlySingularMatrix');        
             warning('off', 'stats:mnrfit:IterOrEvalLimit');      
-            [B,~,stats] = mnrfit([X(:,i), confounds], Y, 'model', 'ordinal');
+            [B,~,stats] = mnrfit([X(:,i).*int_term, X(:,i), confounds], Y, 'model', 'ordinal');
             pval(i) = stats.p(n_levels);
             tstat(i) = stats.t(n_levels);
             coeff(i) = B(n_levels);

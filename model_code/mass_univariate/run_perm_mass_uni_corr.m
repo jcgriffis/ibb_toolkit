@@ -1,6 +1,6 @@
 function [model_results] = run_perm_mass_uni_corr(X, Y, cfg, model_results)
     
-% Permutation tests for mass univariate correlations
+% Permutation tests for mass univariate correlations - Uses Freedman-Lane (Winkler et al., 2014)
 % Joseph Griffis 2024
 
 % Get permuted Y
@@ -17,6 +17,7 @@ if ~isempty(cfg.confounds)
     Y = mdl.Residuals.Raw;
 end
 
+% Get permuted outcome
 n_perm = cfg.perm.n_perm;
 perm_Y = zeros(length(Y), n_perm);        
 for i = 1:n_perm
@@ -26,7 +27,7 @@ end
 % Preallocate permutation correlation matrix
 t_perm = zeros(size(X,2), n_perm);
 
-% Run permutations
+% Run permutation analyses
 if ~isfield(cfg, 'cor_type')
     cor_type = 'Pearson';
 else
