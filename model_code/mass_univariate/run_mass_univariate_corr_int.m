@@ -8,6 +8,7 @@ if ~isfield(cfg, 'cor_type')
     cor_type = 'Pearson';
 else
     cor_type = cfg.cor_type;
+    warning('Spearman correlation selected for analysis with interaction term (moderation analysis), but this approach may not be valid. Interpret results with caution.');
 end
 coeff = zeros(size(X,2),1);
 coeff_pvals = zeros(size(X,2),1);
