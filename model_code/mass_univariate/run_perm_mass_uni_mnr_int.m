@@ -34,7 +34,7 @@ if cfg.parallel == 1
                 warning('off', 'MATLAB:nearlySingularMatrix');        
                 warning('off', 'stats:mnrfit:IterOrEvalLimit'); 
                 [~,~,res] = regress(X(:,i).*int_term, [confound_des, X(:,i)]);                
-                mdl = fitmnr([res(my_perm,i), confounds, X(:,i)], Y, 'model', 'ordinal');
+                mdl = fitmnr([res(my_perm), confounds, X(:,i)], Y, 'model', 'ordinal');
                 t_perm(i,j) = mdl.Coefficients.tStat(n_levels);
             end        
         else
@@ -42,7 +42,7 @@ if cfg.parallel == 1
                 warning('off', 'MATLAB:nearlySingularMatrix');        
                 warning('off', 'stats:mnrfit:IterOrEvalLimit');        
                 [~,~,res] = regress(X(:,i).*int_term, [confound_des, X(:,i)]);                
-                [~,~,stats] = mnrfit([res(my_perm,i), confounds, X(:,i)], Y, 'model', 'ordinal');
+                [~,~,stats] = mnrfit([res(my_perm), confounds, X(:,i)], Y, 'model', 'ordinal');
                 t_perm(i,j) = stats.t(n_levels);
             end
         end
@@ -57,7 +57,7 @@ else
                 warning('off', 'MATLAB:nearlySingularMatrix');        
                 warning('off', 'stats:mnrfit:IterOrEvalLimit'); 
                 [~,~,res] = regress(X(:,i).*int_term, [confound_des, X(:,i)]);                
-                mdl = fitmnr([res(my_perm,i), confounds, X(:,i)], Y, 'model', 'ordinal');
+                mdl = fitmnr([res(my_perm), confounds, X(:,i)], Y, 'model', 'ordinal');
                 t_perm(i,j) = mdl.Coefficients.tStat(n_levels);
             end        
         else
@@ -65,7 +65,7 @@ else
                 warning('off', 'MATLAB:nearlySingularMatrix');        
                 warning('off', 'stats:mnrfit:IterOrEvalLimit');        
                 [~,~,res] = regress(X(:,i).*int_term, [confound_des, X(:,i)]);                
-                [~,~,stats] = mnrfit([res(my_perm,i), confounds, X(:,i)], Y, 'model', 'ordinal');
+                [~,~,stats] = mnrfit([res(my_perm), confounds, X(:,i)], Y, 'model', 'ordinal');
                 t_perm(i,j) = stats.t(n_levels);
             end
         end
