@@ -24,7 +24,7 @@ if cfg.parallel == 1
             warning('off', 'stats:mnrfit:IterOrEvalLimit');      
             mdl = fitmnr([X(:,i), confounds], Y, 'model', 'ordinal');
             pval(i) = mdl.Coefficients.pValue(n_levels);
-            tstat(i) = mdl.Coefficients.pValue(n_levels);
+            tstat(i) = mdl.Coefficients.tStat(n_levels);
             coeff(i) = mdl.Coefficients.Value(n_levels);
         end
     else
@@ -44,7 +44,7 @@ else
             warning('off', 'stats:mnrfit:IterOrEvalLimit');      
             mdl = fitmnr([X(:,i), confounds], Y, 'model', 'ordinal');
             pval(i) = mdl.Coefficients.pValue(n_levels);
-            tstat(i) = mdl.Coefficients.pValue(n_levels);
+            tstat(i) = mdl.Coefficients.tStat(n_levels);
             coeff(i) = mdl.Coefficients.Value(n_levels);
         end
     else
