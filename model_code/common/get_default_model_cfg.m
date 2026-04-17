@@ -77,14 +77,13 @@ switch cfg.model_spec
         % Optimization parameters
         cfg.hp_opt.box_constraint.optimize = 1; % Box constraint
         cfg.hp_opt.box_constraint.range = [0.001, 100];
-        cfg.hp_opt.kernel_scale.optimize = 1; % Kernel scale
-        cfg.hp_opt.kernel_scale.range = [0.001, 100];
+        cfg.hp_opt.kernel_scale.optimize = 0; % Kernel scale
         cfg.hp_opt.kernel_function.optimize = 0; % Kernel function (linear, polynomial, rbf)
         cfg.hp_opt.poly_order.optimize = 0; % Polynomial order
         cfg.hp_opt.standardize.optimize = 0; % Standardization (separate from toolkit standardization)
         cfg.hp_opt.bayes_opt = 1; % Do Bayesian hyper-parameter optimization
-        cfg.hp_opt.opt_iter = 100; % Number of objective function evaluations
-        cfg.hp_opt.repartition = true; % Repartition into train/test at each iteration         
+        cfg.hp_opt.opt_iter = 50; % Number of objective function evaluations
+        cfg.hp_opt.repartition = false; % Repartition into train/test at each iteration         
         addpath(fullfile(cfg.model_dir, 'nlinsvr'));
         if contains(cfg.model_spec, 'svc')
             cfg.standardize = 1;
@@ -270,7 +269,7 @@ if cfg.fit_explanatory_model == 1
         % Iterations
         cfg.perm.n_perm = 1000; % number of permutation iterations (1000 is usually good enough unless you want voxel-level p-values; minimum p at 1000 iterations is 0.0009)
         
-        if ~contains(cfg.model_spec, {'municorr', 'ttest', 'bmunz', 'munilr', 'muniolsr', 'prop_sub'})
+        if ~contains(cfg.model_spec, {'municorr', 'ttest', 'bmunz', 'munilr', 'muniolsr', 'prop_sub', 'munimnr'})
             % Permutation p-value options (cFWE turned on for mass univariate analyses)
             cfg.perm.coeff_cfwe = 0; % Perform continuous FWE correction for voxel permutation p-values, uses value set by fwe_thresh (Mirman et al., 2018 - Neuropsycholgia; note - this is only proven for mass-univariate statistics, but empirically it seems to work well with ridge regression and reasonably well with SVR; for PLS it is observed to be hyper-conservative)
             cfg.perm.coeff_p = 0; % compute voxel-wise permutation p-values (i.e., minimum achievable is 1 / (n_perm + 1))
