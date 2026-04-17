@@ -43,9 +43,15 @@ if cfg.optimize_hyperparams == 1
     % Fit model with optimization
     alpha = []; % sometimes model returns empty results despite convergence
     while isempty(alpha)
-        mdl = fitrsvm(x_train,y_train,'KernelFunction', cfg.kernel,...
-            'OptimizeHyperparameters', params,...
-            'HyperparameterOptimizationOptions', cv_results.hp_opt);
+        if params(2).Optimize == true
+            mdl = fitrsvm(x_train,y_train,'KernelFunction', cfg.kernel,...
+                'OptimizeHyperparameters', params,...
+                'HyperparameterOptimizationOptions', cv_results.hp_opt);
+        else
+             mdl = fitrsvm(x_train,y_train,'KernelFunction', cfg.kernel,...
+                'OptimizeHyperparameters', params,...
+                'HyperparameterOptimizationOptions', cv_results.hp_opt, 'KernelScale', 'auto');
+        end
         if isnan(mdl.Bias)
             alpha = [];
         else
@@ -62,7 +68,7 @@ else
     % Fit model with no optimization
     alpha = []; % sometimes model returns empty results despite convergence
     while isempty(alpha)
-        mdl = fitrsvm(x_train,y_train, 'KernelFunction', cfg.kernel);
+        mdl = fitrsvm(x_train,y_train, 'KernelFunction', cfg.kernel, 'KernelScale', 'auto');
         if isnan(mdl.Bias)
             alpha = [];
         else
