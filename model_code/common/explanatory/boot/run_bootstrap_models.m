@@ -1,6 +1,6 @@
 function model_results = run_bootstrap_models(X, Y, cfg, model_results)
 
-% Run jackknife analysis to get t-statistics and p-values
+% Run bootstrap analysis to get t-statistics and p-values
 % Joseph Griffis 2024
 
 % Set parallel options
@@ -98,16 +98,38 @@ switch cfg.model_spec
         bootfun = @(IV,DV) run_boot_svc(IV,DV,C,gamma,kernel,standardize, cost, method, type);
 end
 
+% Weight observations by stratification groups if applicable
+if isfield(cfg, 'strat_groups')
+
+    % Get bootstrap weights
+    strat_groups = unique(cfg.strat_groups);
+    w = zeros(size(cfg.strat_groups));
+
+    for i = 1:length(strat_groups)
+
+        p = numel(cfg.strat_groups(cfg.strat_groups==strat_groups(i)))./numel(cfg.strat_groups); % prevalence of group
+        w1 = (1./length(cfg.strat_groups)) ./ p; % weights for group
+        w(cfg.strat_groups==strat_groups(i)) = w1./length(strat_groups); % divide by 2 so weights sum to 1 
+
+    end
+
+else
+
+    % Default weighting
+    w = ones(length(Y),1)./length(Y);
+
+end
+
 % Run bootstrap analyses
 if cfg.parallel == 1
     % Bootstrap distribution
-    bootstat = tall(bootstrp(cfg.boot.n_boot,bootfun,X,Y,'Options',options));    
+    bootstat = tall(bootstrp(cfg.boot.n_boot,bootfun,X,Y,'Options',options, 'weights', w));    
 
     % Observed statistics
     stat = tall(bootfun(X,Y)');
 else
     % Bootstrap distribution    
-    bootstat = bootstrp(cfg.boot.n_boot,bootfun,X,Y,'Options',options);    
+    bootstat = bootstrp(cfg.boot.n_boot,bootfun,X,Y,'Options',options, 'weights', w);    
 
     % Observed statistics
     stat = bootfun(X,Y)';  
