@@ -2,7 +2,11 @@ function model_results = run_plsr_modeling(X, Y, cfg, model_results)
 
 % Run hyperparamter optimization and then fit model 
 % Joseph Griffis 2024
-disp(cfg.hp_opt.cv_type);
+if cfg.optimize_hyperparams == 1
+    disp(cfg.hp_opt.cv_type);
+else 
+    disp(['Using pre-defined model dimensionality, k=' num2str(cfg.opt_k)]);
+end
 
 %%%% run CV hyperparameter optimmization for number of PLS components
 if cfg.optimize_hyperparams == 1
@@ -19,7 +23,11 @@ if cfg.optimize_hyperparams == 1
             disp(['The optimal number of PLS components is ' num2str(model_results.opt_k) '. Fitting full model with optimal components.']);
     end
 else
-    model_results.opt_k = cfg.opt_k;
+    if isfield(cfg, 'opt_k')
+        model_results.opt_k = cfg.opt_k;
+    else
+        model_results.opt_k = 1;
+    end
 end
    
 %%%%% Get fitted model with optimal hyperparameters

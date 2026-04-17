@@ -16,8 +16,13 @@ if cfg.optimize_hyperparams == 1
             [opt_k, ~] = run_kfold_plsr(x_train, y_train, cfg); % k-fold cv to identify opt_k for fixed effects and get out-of-sample prediction
     end
 else
-    opt_k = cfg.opt_k;
+    if ~isfield(cfg.opt_k)
+        opt_k = 1;
+    else
+        opt_k = cfg.opt_k;
+    end
 end
+
 %%%%% Get fitted model with optimal hyperparameters
 [~, betas, ~, ~, vip_score] = fitplsrm(x_train, y_train, opt_k);
 
