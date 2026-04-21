@@ -54,14 +54,8 @@ switch cfg.model_spec
             cfg.reg_type = 'ridge'; % L2 ridge regularization
         end
         cfg.hp_opt.bayes_opt = 0;     
-        addpath(fullfile(cfg.model_dir, 'reglm'));  
-        if ~contains(cfg.model_spec, {'svc', 'logistic'})
-            cfg.standardize = 3;
-        else
-            cfg.standardize = 1;
-        end
-        cfg.standardize_method = 'range';        
-        cfg.standardize_type = [0, 1];
+        cfg.standardize = 0;        
+        addpath(fullfile(cfg.model_dir, 'reglm'));
     case {'linsvr', 'kernsvr', 'linsvc', 'kernsvc'} % Support vector machines
         if contains(cfg.model_spec, 'lin')
             cfg.kernel = 'linear'; % linear SVR kernel
@@ -84,16 +78,8 @@ switch cfg.model_spec
         cfg.hp_opt.bayes_opt = 1; % Do Bayesian hyper-parameter optimization
         cfg.hp_opt.opt_iter = 50; % Number of objective function evaluations
         cfg.hp_opt.repartition = false; % Repartition into train/test at each iteration         
+        cfg.standardize = 0;
         addpath(fullfile(cfg.model_dir, 'nlinsvr'));
-        if contains(cfg.model_spec, 'svc')
-            cfg.standardize = 1;
-            cfg.standardize_method = 'range';
-            cfg.standardize_type = [0, 1];        
-        else
-            cfg.standardize = 3;
-            cfg.standardize_method = 'range';
-            cfg.standardize_type = [0, 1];            
-        end
     case {'rensemble', 'censemble'} % Ensemble predictive models
         if contains(cfg.model_spec, 'censemble')
             cfg.cost = [0, 1; 1, 0];
