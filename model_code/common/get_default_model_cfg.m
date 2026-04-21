@@ -54,8 +54,8 @@ switch cfg.model_spec
             cfg.reg_type = 'ridge'; % L2 ridge regularization
         end
         cfg.hp_opt.bayes_opt = 0;     
-        cfg.standardize = 0;        
-        addpath(fullfile(cfg.model_dir, 'reglm'));
+        cfg.standardize = 0;
+        addpath(fullfile(cfg.model_dir, 'reglm'));  
     case {'linsvr', 'kernsvr', 'linsvc', 'kernsvc'} % Support vector machines
         if contains(cfg.model_spec, 'lin')
             cfg.kernel = 'linear'; % linear SVR kernel
@@ -72,12 +72,13 @@ switch cfg.model_spec
         cfg.hp_opt.box_constraint.optimize = 1; % Box constraint
         cfg.hp_opt.box_constraint.range = [0.001, 100];
         cfg.hp_opt.kernel_scale.optimize = 0; % Kernel scale
+        cfg.hp_opt.epsilon.optimize = 0; % Epsilon
         cfg.hp_opt.kernel_function.optimize = 0; % Kernel function (linear, polynomial, rbf)
         cfg.hp_opt.poly_order.optimize = 0; % Polynomial order
         cfg.hp_opt.standardize.optimize = 0; % Standardization (separate from toolkit standardization)
         cfg.hp_opt.bayes_opt = 1; % Do Bayesian hyper-parameter optimization
         cfg.hp_opt.opt_iter = 50; % Number of objective function evaluations
-        cfg.hp_opt.repartition = false; % Repartition into train/test at each iteration         
+        cfg.hp_opt.repartition = false; % Repartition into train/test at each iteration      
         cfg.standardize = 0;
         addpath(fullfile(cfg.model_dir, 'nlinsvr'));
     case {'rensemble', 'censemble'} % Ensemble predictive models
