@@ -60,8 +60,6 @@ if ~isempty(cfg.strat_var)
             n_train = numel(find(training(c,j)));
             if n_comp > (n_train - 1)
                 n_comp = n_train - 1;
-            else
-                n_comp = cfg.hp_opt.n_comp;
             end
         end
 
