@@ -83,6 +83,12 @@ switch cfg.model_spec
 end
 
 % Analysis configuation
+if ~isfield(cfg, 'cv')
+    cfg.cv.stacked_model = 0;
+end
+if ~isfield(cfg.cv, 'stacked_model')
+    cfg.cv.stacked_model = 0;
+end
 if cfg.cv.stacked_model == 0
     mdl_text = [mdl_text ' Only predictors with at least ' num2str(cfg.freq_thresh) ' non-zero observations with absolute values greater than ' num2str(cfg.min_obs) ' were included in the analysis.'...
         ' After excluding observations with no data for any included predictors, N=' num2str(length(model_results.obs_y)) ' observations were included in the analysis.'];
