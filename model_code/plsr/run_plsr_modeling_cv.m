@@ -27,7 +27,15 @@ end
 [~, betas, ~, ~, vip_score] = fitplsrm(x_train, y_train, opt_k);
 
 % Get predicted scores for test set
-y_pred = [ones(length(y_test), 1) x_test]*betas; % get fitted Y
+if isfield(cfg, 'pos_only')
+    betas(betas < 0) = 0;
+    y_pred_train = [ones(length(y_train), 1) x_train]*betas; % get fitted Y
+    mdl_train = fitlm(y_pred_train, y_train); 
+    y_pred_test = [ones(length(y_test), 1) x_test]*betas; % get fitted Y
+    y_pred = predict(mdl_train, y_pred_test);
+else
+    y_pred = [ones(length(y_test), 1) x_test]*betas; % get fitted Y
+end
 
 % Put predictions and observations back in original units if needed
 if isfield(cfg, 'Cy')

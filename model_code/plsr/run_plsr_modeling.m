@@ -33,6 +33,16 @@ end
 %%%%% Get fitted model with optimal hyperparameters
 [model_results.XS, model_results.coeff, model_results.pred_y, ~, model_results.vip_score, ~] = fitplsrm(X, Y, model_results.opt_k);
 
+% Fit new model if only using positive coeffs
+if isfield(cfg, 'pos_only')
+    betas = model_results.coeff;
+    betas(betas < 0) = 0;
+    yhat = [ones(length(Y), 1) X]*betas; % get fitted Y
+    mdl = fitlm(yhat, Y);
+    model_results.pred_y = predict(mdl, yhat);
+    model_results.mdl2 = mdl;
+end
+
 % Put predictions and observations back in original units if needed
 if isfield(model_results, 'Sy')
     model_results.pred_y = (model_results.pred_y .* model_results.Sy) + model_results.Cy;
