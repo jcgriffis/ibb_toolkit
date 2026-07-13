@@ -11,7 +11,7 @@ has_data = nansum(abs(X_trim), 2) > 0;
 if ~isempty(has_data(has_data==0))
     disp([num2str(numel(has_data(has_data==0))) ' subjects have no predictor data after trimming...removing from analysis']);
     
-    % Remove subjects with no predictor observatiosn from X and Y
+    % Remove subjects with no predictor observations from X and Y
     X_trim = X_trim(has_data~=0,:);
     Y = Y(has_data~=0);
     
@@ -19,7 +19,10 @@ if ~isempty(has_data(has_data==0))
     if isfield(cfg, 'strat_var') && ~isempty(cfg.strat_var)
         cfg.strat_var = cfg.strat_var(has_data);
     end
-    
+    if isfield(cfg, 'strat_groups') && ~isempty(cfg.strat_groups)
+        cfg.strat_groups = cfg.strat_groups(has_data);
+    end
+   
     % If confound variables are included, remove subjects from them too
     if isfield(cfg, 'confounds') && ~isempty(cfg.confounds)
         cfg.confounds = cfg.confounds(has_data,:);
@@ -29,6 +32,10 @@ if ~isempty(has_data(has_data==0))
     if isfield(cfg, 'lvol') && ~isempty(cfg.lvol)
         cfg.lvol = cfg.lvol(has_data,:);
     end
+
+    % Same for included subjects
+    cfg.include_subs = cfg.include_subs(has_data);
+    cfg.include_inds = cfg.include_inds(has_data);
     
 else
     disp(['All subjects still have predictor data after trimming, proceding with analysis for all subjects (N=' num2str(size(X_trim,1))]);
