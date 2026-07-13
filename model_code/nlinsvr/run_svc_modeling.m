@@ -51,12 +51,12 @@ if cfg.optimize_hyperparams == 1
             mdl_final = fitcsvm(X,Y,'KernelFunction', cfg.kernel,...
                 'OptimizeHyperparameters', params,...
                 'HyperparameterOptimizationOptions', model_results.hp_opt, ...
-                'Cost', S);
+                'Cost', S, 'ShrinkagePeriod', 1000);
         else
             mdl_final = fitcsvm(X,Y,'KernelFunction', cfg.kernel,...
                 'OptimizeHyperparameters', params,...
                 'HyperparameterOptimizationOptions', model_results.hp_opt, ...
-                'Cost', S, 'KernelScale', 'auto');
+                'Cost', S, 'KernelScale', 'auto', 'ShrinkagePeriod', 1000);
         end
         if isnan(mdl_final.Bias)
             alpha = [];
@@ -68,8 +68,13 @@ else
 
     alpha = []; % sometimes model returns empty results despite convergence
     while isempty(alpha)
-        mdl_final = fitcsvm(X,Y,'KernelFunction', cfg.kernel,...
-            'Cost', S, 'KernelScale', 'auto');
+        if ~isfield(cfg, 'C') && ~isfield(cfg, 'gamma')
+            mdl_final = fitcsvm(X,Y,'KernelFunction', cfg.kernel,...
+                'Cost', S, 'KernelScale', 'auto', 'ShrinkagePeriod', 1000);
+        else
+            mdl_final = fitcsvm(X,Y,'KernelFunction', cfg.kernel,...
+                'Cost', S, 'KernelScale', cfg.gamma, 'BoxConstraint', cfg.C, 'ShrinkagePeriod', 1000);
+        end
         if isnan(mdl_final.Bias)
             alpha = [];
         else

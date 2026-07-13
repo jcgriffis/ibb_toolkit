@@ -51,11 +51,11 @@ if cfg.optimize_hyperparams == 1
         if params(2).Optimize == true
             mdl = fitrsvm(x_train,y_train,'KernelFunction', cfg.kernel,...
                 'OptimizeHyperparameters', params,...
-                'HyperparameterOptimizationOptions', cv_results.hp_opt);
+                'HyperparameterOptimizationOptions', cv_results.hp_opt, 'ShrinkagePeriod', 1000);
         else
              mdl = fitrsvm(x_train,y_train,'KernelFunction', cfg.kernel,...
                 'OptimizeHyperparameters', params,...
-                'HyperparameterOptimizationOptions', cv_results.hp_opt, 'KernelScale', 'auto');
+                'HyperparameterOptimizationOptions', cv_results.hp_opt, 'KernelScale', 'auto', 'ShrinkagePeriod', 1000);
         end
         if isnan(mdl.Bias)
             alpha = [];
@@ -73,7 +73,11 @@ else
     % Fit model with no optimization
     alpha = []; % sometimes model returns empty results despite convergence
     while isempty(alpha)
-        mdl = fitrsvm(x_train,y_train, 'KernelFunction', cfg.kernel, 'KernelScale', 'auto');
+        if ~isfield(cfg, 'C') && ~isfield(cfg, 'gamma')
+            mdl = fitrsvm(x_train,y_train, 'KernelFunction', cfg.kernel, 'KernelScale', 'auto', 'ShrinkagePeriod', 1000);
+        else
+            mdl = fitrsvm(x_train,y_train, 'KernelFunction', cfg.kernel, 'KernelScale', cfg.C, 'BoxConstraint', cfg.gamma, 'ShrinkagePeriod', 1000);
+        end            
         if isnan(mdl.Bias)
             alpha = [];
         else

@@ -1,4 +1,4 @@
-function [out] = run_boot_svr(X, Y, C, gamma, kernel, standardize, method, type)
+function [out] = run_boot_svr(X, Y, C, gamma, kernel, epsilon, standardize, method, type)
 
 % Run bootstrap analyses
 % Joseph Griffis 2024
@@ -27,7 +27,8 @@ while isempty(alpha)
     % Fit final model with cross-validation optimized hyper-parameters
     mdl = fitrsvm(X,Y,'KernelFunction', kfun,...
     'BoxConstraint', C,...
-    'KernelScale', gamma);
+    'KernelScale', gamma,...
+    'Epsilon', epsilon, 'ShrinkagePeriod', 1000);
     if isnan(mdl.Bias)
         alpha = [];
     else
