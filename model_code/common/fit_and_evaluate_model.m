@@ -75,13 +75,23 @@ if cfg.dtlvc == 1
 end
 
 % Stratify if indicated
-if ~isempty(cfg.strat_var)
+if ~isempty(cfg.strat_var) && ~isfield(cfg, 'strat_groups')
     if cfg.cat_Y == 1 && isequal(cfg.strat_var, Y) % Generate dummy code for categorical outcomes if the grouping variable is the response
         cfg.strat_groups = categorical(cfg.strat_var); % just define stratification groups as a categorical data type version of stratification variable
     elseif ~iscategorical(cfg.strat_var) % if it's already categorical, just leave it as it is, otherwise get quaritle groups 
         cfg.strat_groups = get_quartile_groups(cfg.strat_var); % Get quartile groups for continuous outocmes
     elseif iscategorical(cfg.strat_var) 
         cfg.strat_groups = cfg.strat_var;
+    end
+elseif ~isempty(cfg.strat_var) && isfield(cfg, 'strat_groups')
+    if isempty(cfg.strat_groups)
+        if cfg.cat_Y == 1 && isequal(cfg.strat_var, Y) % Generate dummy code for categorical outcomes if the grouping variable is the response
+            cfg.strat_groups = categorical(cfg.strat_var); % just define stratification groups as a categorical data type version of stratification variable
+        elseif ~iscategorical(cfg.strat_var) % if it's already categorical, just leave it as it is, otherwise get quaritle groups 
+            cfg.strat_groups = get_quartile_groups(cfg.strat_var); % Get quartile groups for continuous outocmes
+        elseif iscategorical(cfg.strat_var) 
+            cfg.strat_groups = cfg.strat_var;
+        end
     end
 end
 
