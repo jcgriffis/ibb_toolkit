@@ -31,7 +31,7 @@ if cfg.parallel == 1
         disp(['Running permutation analysis:' num2str(j)])
         my_perm = perm_order(:,j);
         confound_des = [ones(size(X,1),1), confounds];
-        parfor i = 1:size(t_perm,2)
+        parfor i = 1:size(t_perm,1)
             warning('off', 'stats:glmfit:IllConditioned');       
             warning('off', 'stats:glmfit:IterationLimit');        
             [~,~,res] = regress(X(:,i), confound_des);                            
@@ -44,7 +44,7 @@ else
         disp(['Running permutation analysis:' num2str(j)])
         my_perm = perm_order(:,j);
         confound_des = [ones(size(X,1),1), confounds];
-        for i = 1:size(t_perm,2)
+        for i = 1:size(t_perm,1)
             warning('off', 'stats:glmfit:IllConditioned');       
             warning('off', 'stats:glmfit:IterationLimit');        
             [~,~,res] = regress(X(:,i), confound_des);                            
