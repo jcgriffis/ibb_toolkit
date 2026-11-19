@@ -26,10 +26,17 @@ for i = 1:cfg.cv.repeats % Loop over CV repeats
         end
 
         % Get train and test data 
-        x_test = X(test_set==1,:);
         y_test = Y(test_set==1);  
-        x_train = X(train_set==1,:);
         y_train = Y(train_set==1);
+        if isfield(cfg.cv, 'stack_preds')
+            for n_stacks = 1:size(cfg.cv.stack_preds,2)
+                x_train = [X(train_set==1,:), cfg.cv.stack_preds{n_stacks}(train_set==1, i)];
+                x_test = [X(test_set==1,:), cfg.cv.stack_preds{n_stacks}(test_set==1, i)];
+            end
+        else
+            x_train = X(train_set==1,:);        
+            x_test = X(test_set==1,:);
+        end
         
         % Do confound regression if specified
         if cfg.cat_Y == 0 % Only do this for continuous outcomes
