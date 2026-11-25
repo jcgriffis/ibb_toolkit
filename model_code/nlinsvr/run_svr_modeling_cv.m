@@ -5,7 +5,7 @@ function [cv_results] = run_svr_modeling_cv(x_train, y_train, x_test, y_test, i,
 
 % Set parameters for optimization
 if cfg.optimize_hyperparams == 1
-    params = hyperparameters('fitrsvm', X, Y);
+    params = hyperparameters('fitrsvm', x_train, y_train);
     if cfg.hp_opt.box_constraint.optimize == 1
         params(1).Optimize = true;
         params(1).Range = cfg.hp_opt.box_constraint.range;
